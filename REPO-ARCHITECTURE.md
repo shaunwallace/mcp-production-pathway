@@ -14,7 +14,7 @@ The mental model: textbook is what the author teaches, workbook is how the learn
 
 ## Why template repo rather than fork
 
-GitHub has two ways to copy someone else's repo. Fork preserves an upstream link and history, which is right for contributing back. Template creates a fresh repo with clean history, which is right for starting your own project. The workbook is your own project. Use template.
+GitHub has two ways to copy someone else's repo. Fork preserves an upstream link and history, which is right for contributing back. Template creates a fresh repo with clean history, which is right for starting your own project. The workbook is your own project, so a template made more sense.
 
 Setup, once:
 
