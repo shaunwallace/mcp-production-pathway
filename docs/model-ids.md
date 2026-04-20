@@ -7,7 +7,7 @@ Single source of truth for which Claude model the harness targets. The scaffolds
 ## Current pins
 
 | Role | Model ID | Why |
-|------|-------------|-----|
+|------|----------|-----|
 | **Default (harness)** | `claude-sonnet-4-6` | Good tool-use quality at reasonable cost. This is what the Week 2-3 harness examples assume. |
 | Budget runs (eval CI, smoke tests) | `claude-haiku-4-5-20251001` | Cheaper and faster for repeated eval runs in Week 3 and beyond. Lower tool-selection accuracy — don't trust eval-pass-rate numbers from Haiku as final. |
 | Ceiling runs (hard-case evals, comparisons) | `claude-opus-4-7` | For when you're testing whether a failure is a tool-design problem or a model-capability problem. Roughly 3× Sonnet cost. |
