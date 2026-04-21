@@ -78,13 +78,13 @@ Notion has one non-obvious step that deserves calling out because it's the most 
 
 ## Runtimes and CLI tools
 
-### Node 20+
+### Node 22+ (current LTS)
 
 ```bash
-node --version   # should print v20.x.x or higher
+node --version   # should print v22.x.x or higher
 ```
 
-If lower, install the current LTS from <https://nodejs.org/> or via `nvm`/`fnm`/`volta`.
+If lower, install the current LTS from <https://nodejs.org/> or via `nvm`/`fnm`/`volta`. Node 20 is end-of-life as of April 2026 — don't use it.
 
 ### Package manager
 
