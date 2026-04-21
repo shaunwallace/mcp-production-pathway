@@ -1,0 +1,8 @@
+/* Allow inline code inside table cells to wrap rather than forcing
+   the column to overflow. Pre-wrap preserves spaces; break-word
+   breaks long tokens (e.g. model IDs) at any character boundary. */
+td :not(pre) > code,
+th :not(pre) > code {
+  white-space: pre-wrap;
+  word-break: break-word;
+}

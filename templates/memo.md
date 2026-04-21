@@ -5,8 +5,8 @@ description: Blank memo scaffold for each phase's closing artefact.
 
 # [Phase title or memo subject]
 
-**Audience:** [who this is written for — exec, self, future interviewer]
-**Length target:** 1 page (600-800 words)
+**Audience:** [who this is written for — exec, self, future interviewer]  
+**Length target:** 1 page (600-800 words)  
 **Date:** YYYY-MM-DD
 
 ## TL;DR

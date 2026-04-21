@@ -4,9 +4,9 @@ title: "ADR example — SDK, backend, and LLM provider"
 
 # ADR 0001: SDK, backend, and LLM provider for the pathway
 
-- **Status:** accepted
-- **Date:** 2026-05-05
-- **Phase:** 0
+**Status:** accepted  
+**Date:** 2026-05-05  
+**Phase:** 0
 
 > **Note for readers of the worked example:** this ADR picks GitHub as the backend. A different learner could legitimately pick Linear, Notion, Todoist, or anything else on the Week 0 menu. The value of this example is the *shape* of the reasoning — stating criteria, considering options, naming what would change your mind — not the specific choice.
 
@@ -14,7 +14,8 @@ title: "ADR example — SDK, backend, and LLM provider"
 
 Starting the MCP Production Pathway. I need to pin three choices before Week 2: which MCP SDK, which backend to build tools against, and which LLM provider the harness targets. These choices compound — changing any of them mid-pathway costs 1-2 days.
 
-## Options considered
+## Options considered  
+<br>
 
 **MCP SDK**
 
@@ -41,6 +42,7 @@ Starting the MCP Production Pathway. I need to pin three choices before Week 2: 
 TypeScript SDK, GitHub backend, Anthropic as the LLM provider for the harness.
 
 ## Rationale
+<br>
 
 **SDK:** TypeScript is the path of least resistance. I'm fluent in it, the SDK is first-party with the widest example coverage, and the weeks ahead (OAuth, OTel, load test) will all have documented TypeScript patterns. The learning focus is the protocol and tool design, not the SDK; picking anything else would displace learning budget onto the wrong thing.
 

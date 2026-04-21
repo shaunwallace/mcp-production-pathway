@@ -16,6 +16,7 @@ export default defineConfig({
 			title: "MCP Production Pathway",
 			description:
 			  "A 12-week learning pathway for building a production-grade Model Context Protocol server.",
+			customCss: ['./src/styles/custom.css'],
 			logo: {
 				light: "./src/assets/logo-light.svg",
 				dark: "./src/assets/logo-dark.svg",

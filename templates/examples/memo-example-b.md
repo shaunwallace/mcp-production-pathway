@@ -4,8 +4,8 @@ title: "Memo example B — Build, watch, or ignore?"
 
 # MCP: build, watch, or ignore?
 
-**Audience:** my CTO at [invented company — a mid-stage data platform]
-**Length target:** 1 page (~550 words)
+**Audience:** my CTO at [invented company — a mid-stage data platform]  
+**Length target:** 1 page (~550 words)  
 **Date:** 2026-05-12
 
 This memo takes a different shape from `memo-example-a.md`: a decision-tree rather than prose. Same brief, different structure. Use the shape that serves your audience — a CTO who wants the answer in 90 seconds differs from an exec team that wants the reasoning.

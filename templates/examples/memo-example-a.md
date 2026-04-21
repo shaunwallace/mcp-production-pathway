@@ -4,8 +4,8 @@ title: "Memo example A — Why MCP is plumbing, not product"
 
 # Why MCP is plumbing, not product
 
-**Audience:** my exec team at [invented company — a B2B developer tooling startup]
-**Length target:** 1 page (~650 words)
+**Audience:** my exec team at [invented company — a B2B developer tooling startup]  
+**Length target:** 1 page (~650 words)  
 **Date:** 2026-05-12
 
 ## TL;DR
