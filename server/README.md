@@ -1,3 +1,8 @@
+---
+title: Server scaffold
+description: Brief and TODOs for the MCP server scaffold in server/.
+---
+
 # Server scaffold
 
 This is the starter project for your MCP server. The scaffold boots cleanly and exposes a single hello-world tool so you have something that runs from commit zero. Your job across Phase 1 (Weeks 2-3) is to design and implement 4-6 real tools against your chosen backend.

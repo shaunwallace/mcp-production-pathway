@@ -1,3 +1,7 @@
+---
+title: Iteration log example
+---
+
 # Week 3 iteration log (worked example)
 
 Two fully-worked entries. Real logs may have three or four. Notice the structure: each entry opens with one focused change, quotes the before/after pass rate, and names the residual failure class. That's the whole form.

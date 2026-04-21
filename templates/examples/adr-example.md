@@ -1,3 +1,7 @@
+---
+title: "ADR example — SDK, backend, and LLM provider"
+---
+
 # ADR 0001: SDK, backend, and LLM provider for the pathway
 
 - **Status:** accepted

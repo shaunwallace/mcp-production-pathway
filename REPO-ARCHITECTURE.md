@@ -1,3 +1,8 @@
+---
+title: Repo architecture
+description: The textbook-workbook split and git conventions.
+---
+
 # Repo architecture
 
 This document explains how the public learning pathway relates to your private workbook, and the git conventions that hold them together. Read this once before Week 1.

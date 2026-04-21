@@ -8,6 +8,11 @@ dist/
 build/
 *.tsbuildinfo
 
+# Astro / Starlight (docs-site/)
+docs-site/.astro/
+docs-site/dist/
+docs-site/src/content/docs/
+
 # Environment
 .env
 .env.local

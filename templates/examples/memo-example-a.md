@@ -1,3 +1,7 @@
+---
+title: "Memo example A — Why MCP is plumbing, not product"
+---
+
 # Why MCP is plumbing, not product
 
 **Audience:** my exec team at [invented company — a B2B developer tooling startup]

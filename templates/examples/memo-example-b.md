@@ -1,3 +1,7 @@
+---
+title: "Memo example B — Build, watch, or ignore?"
+---
+
 # MCP: build, watch, or ignore?
 
 **Audience:** my CTO at [invented company — a mid-stage data platform]

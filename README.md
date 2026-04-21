@@ -1,3 +1,8 @@
+---
+title: MCP Production Pathway
+description: A 12-week learning pathway for building a production-grade Model Context Protocol server.
+---
+
 # MCP Production Pathway
 
 A 12-week learning pathway for building a production-grade Model Context Protocol server, covering protocol internals, deployment, authentication, observability, evals, cost, and security. Written for senior engineers and engineering leaders who want practitioner-level fluency with the production MCP stack.
@@ -78,6 +83,22 @@ After Week 12 you should have a deployed, authenticated, observable, multi-tenan
 4. Open `weeks/week-01.md`.
 
 When you're drafting a memo, ADR, or iteration log and unsure of the shape, `templates/examples/` has worked examples for each artefact type.
+
+## View as a local site
+
+The repo includes an Astro Starlight site that presents the curriculum with a sidebar, dark mode, and local search (pagefind). Markdown in this repo stays authoritative — the site is a generated view over it.
+
+```bash
+cd docs-site
+pnpm install      # or npm install
+pnpm dev          # or npm run dev
+```
+
+Open <http://localhost:4321>. Build a static copy with `pnpm build` (output in `docs-site/dist/`). See `docs-site/README.md` for details.
+
+### Publish on GitHub Pages
+
+A workflow at `.github/workflows/pages.yml` builds and deploys the site on every push to `main`. One-time: in the repo's **Settings → Pages**, set **Source** to **"GitHub Actions"**. No config edits needed — the workflow injects site/base automatically for any fork.
 
 ## Licence
 

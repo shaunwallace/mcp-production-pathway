@@ -1,3 +1,8 @@
+---
+title: Memo template
+description: Blank memo scaffold for each phase's closing artefact.
+---
+
 # [Phase title or memo subject]
 
 **Audience:** [who this is written for — exec, self, future interviewer]

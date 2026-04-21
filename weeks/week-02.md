@@ -1,3 +1,7 @@
+---
+title: Week 2 — Build your first server (Phase 1, part 1)
+---
+
 # Week 2 — Build your first server (Phase 1, part 1)
 
 **Time budget:** 6 to 10 hours across three or four sittings.

@@ -1,0 +1,21 @@
+{
+  "name": "docs-site",
+  "type": "module",
+  "version": "0.0.1",
+  "scripts": {
+    "sync": "node sync-content.mjs",
+    "dev": "node sync-content.mjs && astro dev",
+    "start": "node sync-content.mjs && astro dev",
+    "build": "node sync-content.mjs && astro build",
+    "preview": "astro preview",
+    "astro": "astro"
+  },
+  "dependencies": {
+    "@astrojs/starlight": "^0.38.3",
+    "@fontsource/inter": "^5.2.8",
+    "@fontsource/jetbrains-mono": "^5.2.8",
+    "@six-tech/starlight-theme-six": "^1.0.16",
+    "astro": "^6.0.1",
+    "sharp": "^0.34.2"
+  }
+}

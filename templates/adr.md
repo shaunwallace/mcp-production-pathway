@@ -1,3 +1,8 @@
+---
+title: ADR template
+description: Blank scaffold for architectural decision records.
+---
+
 # ADR NNNN: [Short title of the decision]
 
 - **Status:** proposed | accepted | superseded by ADR-XXXX

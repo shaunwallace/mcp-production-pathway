@@ -1,3 +1,7 @@
+---
+title: Week 3 — Iterate and measure (Phase 1, part 2)
+---
+
 # Week 3 — Iterate and measure (Phase 1, part 2)
 
 **Time budget:** 6 to 10 hours across three or four sittings.

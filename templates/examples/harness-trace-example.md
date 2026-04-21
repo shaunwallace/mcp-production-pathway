@@ -1,3 +1,7 @@
+---
+title: Harness trace example
+---
+
 # Harness output — worked examples
 
 What healthy trace output looks like, for single-prompt mode and for eval mode. Use this to calibrate your own harness formatting in Weeks 2 and 3. If your output is noisier or less scannable than this, tighten it — the trace is a debugging tool, not a log dump.

@@ -1,3 +1,7 @@
+---
+title: Week 0 — Setup and prerequisites
+---
+
 # Week 0 — Setup and prerequisites
 
 **Time budget:** 30 to 60 minutes, once.

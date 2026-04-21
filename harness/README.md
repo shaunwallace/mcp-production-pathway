@@ -1,3 +1,8 @@
+---
+title: Harness scaffold
+description: Brief and TODOs for the agent harness in harness/.
+---
+
 # Agent harness scaffold
 
 The harness is the piece of infrastructure that exercises your MCP server through a real LLM loop. Inspector is fine for eyeballing shapes; only the harness tells you what actually happens when an LLM picks tools, composes arguments, handles errors, and multi-turns.

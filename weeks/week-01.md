@@ -1,3 +1,7 @@
+---
+title: Week 1 — Mental model (Phase 0)
+---
+
 # Week 1 — Mental model (Phase 0)
 
 **Time budget:** 5 to 8 hours across two or three sittings.

@@ -1,3 +1,8 @@
+---
+title: Worked examples
+description: Reference artefacts showing the shape of a good memo, ADR, iteration log, progress entry, and harness trace.
+---
+
 # Worked examples
 
 Reference artefacts that show the shape of a good memo, ADR, iteration log, and harness trace. Use them to calibrate your own work when you're unsure whether you're on the right track.

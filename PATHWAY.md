@@ -1,3 +1,8 @@
+---
+title: Pathway map
+description: One-page overview of how the 12-week pathway fits together.
+---
+
 # Pathway map
 
 One-page overview of how the 12-week pathway fits together: what each week produces, and which artefacts feed which later weeks. If you're tempted to skip a week, read this first — most weeks have downstream dependencies, and the gaps show up as stalls two or three phases later.
@@ -33,32 +38,40 @@ Week 2 tool definitions
 Week 2 instrument() wrapper
   └─ replaced by OpenTelemetry spans in Week 9 (same shape, new backend)
 
+Week 2 harness
+  ├─ eval mode added in Week 3
+  ├─ HTTP transport added in Week 4
+  ├─ reconnect behaviour instrumented in Week 5
+  ├─ OAuth client added in Week 7
+  ├─ concurrency and load in Week 11
+  └─ adversarial prompts in Week 12
+
 Week 3 eval dataset (phase-1-tool-selection.jsonl)
   ├─ rerun as regression guard in Week 5 (did HTTP break selection?)
   ├─ rerun under load in Week 9 (do spans show the same pass rate?)
   ├─ extended with latency assertions in Week 10
   └─ extended with adversarial prompts in Week 12
 
-Week 2 harness
-  ├─ eval mode added in Week 3
-  ├─ HTTP transport added in Week 4
-  ├─ OAuth client added in Week 7
-  ├─ concurrency and load in Week 11
-  └─ adversarial prompts in Week 12
-
-Week 4 Streamable HTTP transport
-  └─ the thing every subsequent week's deployment, auth, and observability
-     work sits on top of
+Week 4-5 HTTP transport + session layer
+  ├─ the deployment target in Week 8 (stdio doesn't deploy)
+  ├─ OAuth flows run over it in Week 6-7
+  ├─ span boundaries for Week 9's tracing
+  ├─ concurrent-session load tests in Week 11
+  └─ session hijack and replay in the Week 12 threat model
 
 Week 6-7 OAuth integration
-  └─ the prerequisite for Week 8's deployment (you can't deploy an
-     auth-less server to the public internet responsibly)
+  ├─ deployed behind auth in Week 8
+  ├─ authenticated calls traced in Week 9
+  ├─ per-tenant cost attribution in Week 10
+  └─ tenant isolation scrutinised in Week 12
 
 Week 8 SLOs
+  ├─ Week 9's tracing measures adherence to them
   └─ the numbers Week 11's load test has to defend
 
 Week 9 OTel spans
-  └─ the evidence Week 10's cost attribution reads
+  ├─ cost attribution reads them in Week 10
+  └─ bottleneck evidence for Week 11's load tests
 ```
 
 ## What compounds

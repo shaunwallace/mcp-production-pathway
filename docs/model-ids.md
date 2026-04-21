@@ -1,3 +1,8 @@
+---
+title: Model IDs
+description: Pinned Claude model IDs and rotation policy.
+---
+
 # Model IDs
 
 Single source of truth for which Claude model the harness targets. The scaffolds and week briefs reference this file rather than hard-coding an ID, so rotating to a newer model is a one-file change.

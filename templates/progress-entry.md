@@ -1,3 +1,8 @@
+---
+title: Progress entry template
+description: Append-only log shape used across all 12 weeks.
+---
+
 # Weekly progress log
 
 One entry per working session. Append-only. Don't edit past entries, they're a record of how I actually thought at the time.

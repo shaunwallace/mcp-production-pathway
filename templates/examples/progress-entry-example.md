@@ -1,3 +1,7 @@
+---
+title: Progress entry example
+---
+
 # Progress log entries (worked example)
 
 Two entries showing the "Did / Saw / Next / Stuck on" shape in practice. The progress log is the artefact you write most often — one entry per working session — so getting the shape right matters more here than in any other template.
