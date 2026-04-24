@@ -5,17 +5,23 @@ description: A 12-week learning pathway for building a production-grade Model Co
 
 # MCP Production Pathway
 
-A 12-week learning pathway for building a production-grade Model Context Protocol server, covering protocol internals, deployment, authentication, observability, evals, cost, and security. Written for senior engineers and engineering leaders who want practitioner-level fluency with the production MCP stack.
+A 12-week learning pathway for building a production-grade Model Context Protocol server — protocol internals, local-first dev, containerised deployment, authentication, multi-tenancy, observability, evals, cost, security. Written for senior engineers and engineering leaders who want practitioner-level fluency with the production MCP stack.
+
+## Release status
+
+**Weeks 1-3 are live. Weeks 4-12 ship as outlines now and will be written out iteratively.** Each outline commits to the structure — objectives, canonical code example, checkpoint, artefact evolution — so the shape is stable even where the prose isn't yet. Subscribe to releases on the repo to get notified as each week lands in full.
+
+The pathway is released incrementally on purpose. Three weeks of real depth beats twelve weeks of thin coverage, and the release cadence keeps pace with learners who are actually doing the work.
 
 ## What you'll build
 
-By the end of the pathway, you will have a deployed, authenticated, observable, multi-tenant MCP server with a real threat model, a load test, and an eval harness, plus a set of memos and a decision log that could stand up to scrutiny in an exec review or technical interview.
+A local-first, container-packaged, OAuth-protected, multi-tenant MCP server with tracing, metrics, evals in CI, a load test, a threat model, and a runbook. Every week can be completed end-to-end on your laptop. Cloud deployment is an optional extension, not a gate.
 
 The reference implementation is TypeScript end to end, using the official MCP SDK, Anthropic SDK, and OpenTelemetry.
 
 ## Who this is for
 
-Engineers with production experience who are new to MCP specifically. The pathway assumes comfort with TypeScript, HTTP, JSON-RPC concepts, OAuth at a basic level, and some form of container or serverless deployment. It does not assume any prior MCP work.
+Engineers with production experience who are new to MCP specifically. The pathway assumes comfort with TypeScript, HTTP, JSON-RPC concepts, OAuth at a basic level, containers, and some form of deployment. It does not assume any prior MCP work.
 
 ## Who this is not for
 
@@ -26,9 +32,9 @@ Not a quickstart. Not a "build an AI agent in 10 lines" tutorial. The work is de
 This is a template repository. It contains four kinds of content:
 
 - **Curriculum** (the textbook): `weeks/`, this README. Read-only reference material.
-- **Templates and worked examples** (calibration): `templates/` (blank scaffolds for memos, ADRs, progress entries) and `templates/examples/` (worked examples of each artefact, for when you're stuck or want to check the shape of your own work).
+- **Templates and worked examples** (calibration): `templates/` (blank scaffolds for ADRs, memos, progress entries) and `templates/examples/` (worked examples, for when you're stuck or want to check the shape of your own work).
 - **Scaffolds** (the workbook starter): `server/`, `harness/`. Empty code with TODOs that you fill in.
-- **Supporting material**: `PATHWAY.md` (12-week artefact-dependency map), `docs/` (pinned Claude model IDs), `scripts/` (small helpers like the 300-line harness check), `.env.example` (placeholder for the env vars you'll need).
+- **Supporting material**: `PATHWAY.md` (artefact-dependency map and evolution table), `docs/` (pinned Claude model IDs), `scripts/` (helpers like the 300-line harness check), `.env.example` (placeholder env vars).
 
 The right way to use it is to create your own private workbook from this template (GitHub → "Use this template" → "Create a new repository") and do your work there. See `REPO-ARCHITECTURE.md` for the full pattern.
 
@@ -36,53 +42,95 @@ The right way to use it is to create your own private workbook from this templat
 
 | Phase | Weeks | Focus | Status |
 |-------|-------|-------|--------|
-| 0 | 1 | Mental model: what MCP is, what it isn't | **Available** |
-| 1 | 2-3 | First server, tool design, agent harness | **Available** |
-| 2 | 4-5 | Protocol internals, transports, resumability | Coming soon |
-| 3 | 6-7 | OAuth and identity | Coming soon |
-| 4 | 8-9 | Deployment and SLOs | Coming soon |
-| 5 | 10-11 | Observability, evals, cost | Coming soon |
-| 6 | 12 | Security, multi-tenancy, hostile inputs | Coming soon |
-
-This pathway is released iteratively as modules, not all up-front. Weeks 1-3 are live. Weeks 4-12 are outlined below and will be published as they're written. You can start Phase 0 today; later phases will land as you need them.
+| 0 | 1 | Mental model: what MCP is, what it isn't | **Live** |
+| 1 | 2-3 | First server, tool design, evals, CI | **Live** |
+| 2 | 4-5 | HTTP transport, sessions, sampling, persistence | Outline |
+| 3 | 6-7 | OAuth, multi-tenancy, audit logging | Outline |
+| 4 | 8-9 | Containerised deploy, SLOs, secrets, OpenTelemetry, metrics | Outline |
+| 5 | 10-11 | Caching, cost attribution, load testing | Outline |
+| 6 | 12 | Security, threat model, PII, hostile inputs, close-out | Outline |
 
 ### What each week covers
 
-One-paragraph preview per week so you can see the whole arc before you begin.
+- **Week 1 — Mental model.** Spec, JSON-RPC 2.0, MCP's honest limits. Output: a "why MCP" memo and an ADR pinning SDK and backend choice. This is the only Phase 0 memo; two more land at Phase 3 and Phase 6.
+- **Week 2 — First server.** Design 4-6 tools and one resource against a real backend. Fill in the server scaffold with zod validation, a `pino` logger, and an `instrument()` wrapper. Write unit tests (vitest) and contract tests (MSW) against recorded fixtures. Build a ~40-line agent harness over stdio. Output: a working end-to-end MCP server exercised in Claude Desktop and the Inspector, with a test suite and a canonical error taxonomy.
+- **Week 3 — Iterate, measure, CI.** Write an eval dataset. Extend the harness to run it. Use pass rate to drive rename/redesign iterations. Wire evals and vitest into GitHub Actions. Add empty-success detection. Output: a regression guard on CI that reruns every subsequent phase.
+- **Week 4 — Streamable HTTP transport.** Port from stdio to HTTP using `hono`. Test client portability against Inspector, Claude Desktop, Cursor. Add transport-boundary validation, idempotency keys, timeouts. Rerun the Week 3 evals under HTTP.
+- **Week 5 — Sessions, sampling, elicitation, persistence.** Implement session resumption, progress notifications, cancellation, sampling (server-initiated completions), elicitation. Introduce a persistence layer (better-sqlite3 dev, Postgres via docker-compose for prod-shape). Output: the compose file that grows into your local production stack.
+- **Week 6 — OAuth 2.1 server side.** Discovery, token validation, scopes. Include a minimal local issuer (`jose`-based, ~60 lines) so the whole flow works offline. Audit logging introduced.
+- **Week 7 — Harness as OAuth client, multi-tenancy.** PKCE, token refresh, tenant isolation, per-tenant quotas. Phase 3 memo.
+- **Week 8 — Docker, deployment, SLOs, secrets.** Multi-stage Dockerfile, health probes, graceful shutdown, rollback drill. SLOs (p95, error budget, concurrency). Secrets via file-mount locally and Secret Manager in cloud. Local-only track is a full checkpoint; Cloud Run push is an optional extension. `RUNBOOK.md` created.
+- **Week 9 — OpenTelemetry, traces, metrics.** Replace the Week 2 `instrument()` wrapper with OTel spans. Add RED metrics (`prom-client`). Scrape locally with Prometheus; Jaeger for traces — both in compose.
+- **Week 10 — Evals dashboard, cost attribution, caching, tool versioning.** Attribute cost per session, tool, tenant. Add Anthropic prompt caching and tool-result caching with cache-hit metrics. Handle tool schema versioning. ADR on attribution model.
+- **Week 11 — Load testing, cost at scale.** k6 in compose. Concurrent-session load. Model cost at 10× and 100× expected volume. Find the bottleneck (it is rarely the one you'd guess).
+- **Week 12 — Security, threat model, PII, close-out.** Threat model the full stack. Prompt-injection resistance. Tenant isolation scrutiny. Data retention and PII policy. Dependency security scan. Phase 6 memo; short closing callout on adjacent topics (agent frameworks, memory, A2A) deliberately out of scope for this pathway.
 
-- **Week 1 — Mental model.** What MCP actually is, honestly, including what it is not. Reading: spec, JSON-RPC 2.0, Anthropic's announcement, critical pieces on MCP's limits. Output: a one-page "why MCP" memo and your first ADR pinning SDK and backend choice.
-- **Week 2 — First server.** Design 4-6 tools against a real third-party backend of your choice (Week 0 has a criteria-based menu; GitHub is the "no preference" default), fill in the server scaffold, wire up structured logging, and build a minimal agent harness that drives the server through Claude. Output: a working end-to-end MCP server you've exercised in Claude Desktop.
-- **Week 3 — Iterate and measure.** Write your first eval dataset. Extend the harness to run it. Use tool-selection pass rate to drive concrete iterations — rename, re-describe, redesign. Output: Phase 1 memo plus an eval set that becomes the regression guard for every subsequent phase.
-- **Week 4 — Streamable HTTP transport.** Port your server off stdio to the HTTP transport defined in the spec. Understand the implications for connection lifecycle, statelessness, and latency. Rerun the Week 3 eval under HTTP to confirm nothing regressed.
-- **Week 5 — Session resumability and progress.** Implement session resumption, progress notifications for long-running tools, and cancellation. Measure reconnect behaviour from the harness. Output: ADR on state model; memo on Phase 2 tradeoffs.
-- **Week 6 — OAuth 2.1 foundations.** Implement the server side of OAuth (discovery, token validation, scopes). Read the spec's authentication sections carefully; this is where most production servers cut corners they regret.
-- **Week 7 — Harness as OAuth client.** Teach the harness to complete a real OAuth flow (PKCE, token refresh, rotation). Output: Phase 3 memo on identity choices; rerun evals under authenticated calls.
-- **Week 8 — Deployment and SLOs.** Target either a container platform (Cloud Run, Fly.io, Railway) or a serverless platform. Set explicit SLOs (p95 latency, error budget, concurrency). Wire up health checks and graceful shutdown.
-- **Week 9 — OpenTelemetry and tracing.** Replace the Week 2 `instrument()` wrapper with OTel spans that propagate across the harness → server → backend path. Output: the first real trace-driven debugging session; Phase 4 memo on observability.
-- **Week 10 — Evals as CI; cost attribution.** Wire the Week 3 eval set into a scheduled run. Attribute cost per session, tool, and user. Output: a dashboard of pass rate + cost over time; ADR on attribution model.
-- **Week 11 — Load testing and cost modelling at scale.** Concurrent harness mode. Model cost at 10× and 100× expected volume. Find the bottleneck (it is rarely the one you'd guess). Output: Phase 5 memo on operational economics.
-- **Week 12 — Security, multi-tenancy, hostile inputs.** Threat model the full stack. Prompt-injection resistance, tenant isolation, handling adversarial tool outputs. Output: final runbook, a completed threat model, and a memo that closes the pathway.
+## Tooling choices
 
-After Week 12 you should have a deployed, authenticated, observable, multi-tenant MCP server with a real threat model, a load test, and an eval harness. Plus six memos and a decision log that could stand up to scrutiny in an exec review or technical interview.
+This pathway is opinionated about tools. Snippets stay consistent across weeks so you don't have to translate between examples. You are not locked in — every tool is introduced with a one-line tradeoff and alternatives for you to swap if you prefer.
+
+| Concern | Canonical choice | Alternatives flagged |
+|---|---|---|
+| Input validation | zod | valibot, ajv |
+| Logging | pino | winston, roarr |
+| Testing | vitest | `node:test`, jest |
+| HTTP mocking | MSW | nock |
+| HTTP server (W4+) | hono | express, fastify |
+| Persistence (W5+) | better-sqlite3 (dev), Postgres (prod-shape) | libsql, Drizzle on any SQL |
+| OAuth/JWT (W6) | jose + MCP SDK built-ins | node-jose, panva/openid-client |
+| Container (W8) | Docker multi-stage | Podman, Buildah |
+| Deploy (W8) | Cloud Run | Fly.io, Railway, Lambda container |
+| Secrets (W8) | GCP Secret Manager | AWS SSM, HashiCorp Vault |
+| Tracing (W9) | @opentelemetry/sdk-node | — (OTel is the standard) |
+| Metrics (W9) | prom-client + Prometheus | OTel metrics, Datadog |
+| Load (W11) | k6 | artillery, autocannon |
+
+## Local-first principle
+
+Every week completes on your laptop. Weeks that introduce cloud-shaped concerns (deployment, secrets, hosted auth) ship with a local equivalent that exercises the same patterns:
+
+- **Local OAuth issuer** (W6) — 60-line in-process JWT issuer; same validation path a real IdP would use.
+- **Local secrets** (W8) — docker secrets / file-mount pattern; same abstraction Secret Manager fills in cloud.
+- **Local deploy** (W8) — `docker run` with probes, graceful shutdown, rollback drill — full W8 checkpoint without a cloud account.
+- **Local observability** (W9) — Jaeger + Prometheus in compose.
+- **Local load** (W11) — k6 as a one-shot compose service.
+
+By the end of Week 12, `docker compose up` brings up your entire production-shaped stack locally: server, Postgres, issuer, Jaeger, Prometheus, optional Grafana. Deploying to a real cloud is an optional W8 extension, never a gate to progressing.
+
+## Artefact evolution and quality gates
+
+Five artefacts grow deliberately across the pathway: the server, the harness, the eval set, the compose file, and the CI workflow. (Plus a consumer README and a runbook that start later.) Each change uses the same five-part block so you can see what moved, verify it worked, and connect it to what it enables later:
+
+```
+Before: <artefact state at end of previous week>
+Change: <specific edit, with file paths>
+After:  <new state>
+Verify: <exact command + expected output>
+Enables: <one sentence forward-reference>
+```
+
+Phase boundaries have a single `make verify` acceptance gate — full test suite, full eval suite, health check against the local compose stack. Tagging `phase-N-complete` requires verify to pass. It makes the checkpoint falsifiable.
+
+See `PATHWAY.md` for the full artefact evolution table.
 
 ## Before you start
 
-`weeks/week-00-setup.md` is a 30-60 minute walkthrough covering:
-
-- Node 20+, package manager, Claude Desktop install
-- Anthropic API key with a spend cap set
-- A Week 2 backend picked from a criteria-based menu (GitHub, Linear, Todoist, Trello, Notion, and others) with its credentials set up
-- Workbook repo template-instantiation
-- Smoke-test the scaffolds before Week 1
+`weeks/week-00-setup.md` is a 30-60 minute walkthrough covering Node 22, Claude Desktop, Anthropic API key with spend cap, backend choice, workbook instantiation, and a scaffold smoke test.
 
 ## Start here
 
 1. Read `REPO-ARCHITECTURE.md` — the textbook/workbook split.
-2. Read `PATHWAY.md` — one-page map of how the weeks compound. Worth 5 minutes before you commit to 12 weeks.
+2. Read `PATHWAY.md` — artefact-dependency map and evolution table. Worth 5 minutes before you commit to 12 weeks.
 3. Work through `weeks/week-00-setup.md`.
 4. Open `weeks/week-01.md`.
 
-When you're drafting a memo, ADR, or iteration log and unsure of the shape, `templates/examples/` has worked examples for each artefact type.
+When you're drafting a memo or ADR and unsure of the shape, `templates/examples/` has worked examples.
+
+## Cost expectation
+
+Over the full 12 weeks, budget **$20-50** in Anthropic API spend on Sonnet-tier, dominated by eval reruns in Weeks 3, 9, and 11. Set a monthly cap on your API key now.
+
+Cloud deployment in W8 is optional. Cloud Run has a generous free tier; running the full 12-week cloud track on your own account is typically under $5. You can complete every week with zero cloud spend by staying on the local track.
 
 ## View as a local site
 
@@ -98,7 +146,7 @@ Open <http://localhost:4321>. Build a static copy with `pnpm build` (output in `
 
 ### Publish on GitHub Pages
 
-A workflow at `.github/workflows/pages.yml` builds and deploys the site on every push to `main`. One-time: in the repo's **Settings → Pages**, set **Source** to **"GitHub Actions"**. No config edits needed — the workflow injects site/base automatically for any fork.
+A workflow at `.github/workflows/pages.yml` builds and deploys on every push to `main`. One-time: in **Settings → Pages**, set **Source** to **"GitHub Actions"**. No config edits needed.
 
 ## Licence
 
