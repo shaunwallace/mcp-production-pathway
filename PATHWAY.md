@@ -1,39 +1,69 @@
 ---
 title: Pathway map
-description: One-page overview of how the 12-week pathway fits together.
+description: How the 12-week pathway fits together — dependencies, artefact evolution, and quality gates.
 ---
 
 # Pathway map
 
-One-page overview of how the 12-week pathway fits together: what each week produces, and which artefacts feed which later weeks. If you're tempted to skip a week, read this first — most weeks have downstream dependencies, and the gaps show up as stalls two or three phases later.
+One-page overview of how the 12-week pathway fits together: what each week produces, which artefacts feed which later weeks, and the quality gates that make each evolution visible. If you're tempted to skip a week, read this first — most weeks have downstream dependencies, and the gaps show up as stalls two or three phases later.
 
 ## Release cadence
 
-The pathway is released iteratively as modules, not all up-front. Weeks 1-3 (Phase 0-1) are live now. Weeks 4-12 are outlined in `README.md` and will be published as they're written. The structure is stable — what ships is the depth inside each week.
+The pathway is released iteratively. **Weeks 1-3 are live.** Weeks 4-12 ship as outlines today (stable structure, terse prose) and fill out over time. The shape is load-bearing and won't change; the depth inside each week is what grows.
 
 ## The spine
 
 ```
   PHASE 0        PHASE 1              PHASE 2         PHASE 3        PHASE 4         PHASE 5              PHASE 6
-  Mental model   Build + measure      Protocol        Identity       Deploy          Observability        Security
+  Mental model   Build + measure      Protocol        Identity       Deploy          Scale                Security
   Wk 1           Wk 2-3               Wk 4-5          Wk 6-7         Wk 8-9          Wk 10-11             Wk 12
 ```
 
-Each phase closes with a memo in `memos/` (01-tool-design, 02-transports, …). Each architectural decision gets an ADR in `decisions/`. The progress log in `progress.md` is append-only across all weeks.
+Three memos across the pathway: **Phase 0** (why MCP, Week 1), **Phase 3** (identity + tenancy, Week 7), **Phase 6** (security + close-out, Week 12). ADRs accrete at every architectural decision. The progress log in `progress.md` is append-only across all weeks.
+
+## Artefact evolution
+
+Five artefacts grow deliberately across the pathway, plus a consumer README and a runbook that start mid-pathway. This table is the single place to see how your workbook accumulates capability.
+
+| Artefact | W2 | W3 | W4 | W5 | W6-7 | W8 | W9 | W10 | W11 | W12 |
+|---|---|---|---|---|---|---|---|---|---|---|
+| **Server** | stdio, 4-6 tools + 1 resource | — | HTTP transport | +sessions, +persistence, +sampling, +elicitation | +OAuth, +tenancy, +audit | +container, +probes, +graceful shutdown | — | +caching, +versioning | — | +input hardening, +PII policy |
+| **Harness** | tool-use loop, ~40 lines | +eval mode | +HTTP client | +resume, +sampling responder | +OAuth (PKCE) client | — | +trace assertions | +cost capture | +concurrent mode | +injection eval |
+| **Eval set** | — | 12-20 cases | +HTTP regression | +session cases | +auth cases | — | — | +cost budgets | +latency budgets | +injection cases |
+| **docker-compose** | — | — | — | server + Postgres | +local issuer | +containerised server | +Jaeger, +Prometheus | +Grafana (optional) | +k6 one-shot | — |
+| **CI workflow** | — | vitest + evals + dependabot | — | — | +auth setup | +image build + audit | — | +cost report | +scheduled load | +security scan |
+| **Error taxonomy** | canonical shape | — | +transport errors | +session errors | +auth errors, +rate-limit | — | — | — | — | +injection-attempt flags |
+| **RUNBOOK.md** | — | — | — | — | — | created: SLO breach, rollback | +trace-debug recipes | +cost anomaly | +load-incident playbook | +security incident |
+| **Consumer README** | stub: tools list | — | +HTTP endpoint | — | +auth section | +deployed URL | — | — | — | +SLA language |
+
+By W12, `docker compose up` brings up your full production-shaped stack locally. That's not a bonus — it's the W12 checkpoint.
+
+## Quality gate pattern
+
+Every tracked-artefact change uses the same five-part block inside the week that introduces it:
+
+```
+Before: <artefact state at end of previous week>
+Change: <specific edit, with file paths>
+After:  <new state>
+Verify: <exact command + expected output>
+Enables: <one sentence forward-reference>
+```
+
+Phase boundaries have a single `make verify` acceptance gate — full test suite, full eval suite, health check against the local compose stack. Tagging `phase-N-complete` requires verify to pass. This makes the checkpoint falsifiable, not just ceremonial.
 
 ## Artefact dependency chain
 
-This is where skipping hurts. Each arrow is a dependency: the right-hand artefact cannot exist without the left-hand one.
+Each arrow is a dependency: the right-hand artefact cannot exist without the left-hand one.
 
 ```
 Week 1 memo (00-why-mcp)
-  ├─ revisited and annotated in Week 6 (after you've built OAuth and see
-  │  which of your Week-1 claims held up)
-  └─ revisited again in Week 12 (security lens on the original recommendation)
+  └─ revisited in Week 12 (security lens on the original recommendation)
 
-Week 2 tool definitions
-  ├─ subjected to eval in Week 3 (pass/fail drives iteration)
-  └─ ported to HTTP transport in Week 4 (same tools, new plumbing)
+Week 2 tool definitions + resource
+  ├─ subjected to evals in Week 3 (pass/fail drives iteration)
+  ├─ ported to HTTP in Week 4 (same tools, new transport)
+  └─ versioned carefully in Week 10 (schema changes without breaking consumers)
 
 Week 2 instrument() wrapper
   └─ replaced by OpenTelemetry spans in Week 9 (same shape, new backend)
@@ -41,59 +71,72 @@ Week 2 instrument() wrapper
 Week 2 harness
   ├─ eval mode added in Week 3
   ├─ HTTP transport added in Week 4
-  ├─ reconnect behaviour instrumented in Week 5
-  ├─ OAuth client added in Week 7
+  ├─ reconnect + sampling responder in Week 5
+  ├─ OAuth (PKCE) client added in Week 7
+  ├─ cost capture in Week 10
   ├─ concurrency and load in Week 11
   └─ adversarial prompts in Week 12
 
-Week 3 eval dataset (phase-1-tool-selection.jsonl)
-  ├─ rerun as regression guard in Week 5 (did HTTP break selection?)
-  ├─ rerun under load in Week 9 (do spans show the same pass rate?)
-  ├─ extended with latency assertions in Week 10
+Week 2 test suite (vitest + MSW)
+  ├─ wired into CI in Week 3
+  └─ extended with contract tests after every backend change
+
+Week 3 eval dataset
+  ├─ rerun as regression guard in Week 4 (did HTTP break selection?)
+  ├─ rerun under auth in Week 7
+  ├─ rerun under tracing in Week 9 (do spans show the same pass rate?)
+  ├─ extended with cost and latency budgets in Week 10-11
   └─ extended with adversarial prompts in Week 12
 
-Week 4-5 HTTP transport + session layer
-  ├─ the deployment target in Week 8 (stdio doesn't deploy)
-  ├─ OAuth flows run over it in Week 6-7
-  ├─ span boundaries for Week 9's tracing
-  ├─ concurrent-session load tests in Week 11
-  └─ session hijack and replay in the Week 12 threat model
+Week 3 CI workflow
+  ├─ image build and npm audit in Week 8
+  ├─ cost report in Week 10
+  ├─ scheduled load test in Week 11
+  └─ security scan in Week 12
 
-Week 6-7 OAuth integration
+Week 5 persistence layer + compose file
+  ├─ tenant data model in Week 6-7
+  ├─ session store behind auth in Week 8
+  ├─ traced DB calls in Week 9
+  ├─ cost data store in Week 10
+  └─ load-test target in Week 11
+
+Week 6-7 OAuth + tenancy + audit
   ├─ deployed behind auth in Week 8
   ├─ authenticated calls traced in Week 9
   ├─ per-tenant cost attribution in Week 10
   └─ tenant isolation scrutinised in Week 12
 
-Week 8 SLOs
-  ├─ Week 9's tracing measures adherence to them
-  └─ the numbers Week 11's load test has to defend
+Week 8 container + SLOs + runbook
+  ├─ Week 9's tracing and metrics measure adherence
+  ├─ Week 10's caching changes what the SLOs allow
+  └─ Week 11's load test defends them
 
-Week 9 OTel spans
+Week 9 OTel spans + metrics
   ├─ cost attribution reads them in Week 10
   └─ bottleneck evidence for Week 11's load tests
 ```
 
 ## What compounds
 
-Four artefacts carry the most weight across the whole pathway. If you treat anything as load-bearing, treat these:
+Four artefacts carry the most weight across the whole pathway:
 
-1. **The eval dataset** (built Week 3, extended every subsequent phase). This is the regression guard for everything. A team that ships MCP without this will find their reliability problem in production; a team that has this can change transports, migrate clouds, or rotate models and catch regressions in minutes.
+1. **The eval dataset** (built Week 3, extended every subsequent phase). The regression guard for everything. A team that ships MCP without this will find their reliability problem in production; a team that has this can change transports, migrate clouds, or rotate models and catch regressions in minutes.
 
-2. **The memos** (one per phase, six total). Individually they're one-page opinions. Collectively they're a progression record — a reader can see how your thinking changed as you encountered real constraints. This is the artefact that has interview and exec-review value.
+2. **The harness** (built Week 2, extended every week). The single piece of infrastructure that tells you what actually happens when a real LLM uses your server. Keep it under 300 lines forever; if it starts to feel like an agent framework, cut.
 
-3. **The ADRs** (one per architectural choice). The log becomes a defensible record of decision-making. The habit is more valuable than any individual ADR.
+3. **The docker-compose file** (introduced Week 5, grown every phase). Your local production stack. By Week 12, it's the difference between "I read about MCP in production" and "I can bring up an MCP production stack on my laptop in 30 seconds."
 
-4. **The harness** (built Week 2, extended every week). It's the single piece of infrastructure that tells you what actually happens when a real LLM uses your server. Keep it under 300 lines forever; if it starts to feel like an agent framework, cut.
+4. **The ADRs** (one per architectural choice). The log becomes a defensible record of decision-making. The habit is more valuable than any individual ADR.
 
 ## If you're short on time
 
-You can get real value from a partial pathway, but not from any partial pathway. Priority order for a time-constrained learner:
+Priority order for a time-constrained learner:
 
-1. **Weeks 1-3** (mental model, first server, evals). Even alone, this is more than most production MCP teams have done. Tag `phase-1-complete` and stop here if you need to; the rest is still reachable later.
-2. **Weeks 6-7** (OAuth) and **Weeks 8-9** (deploy + OTel). The production readiness spine. Skipping either leaves you with a toy.
+1. **Weeks 1-3** (mental model, first server, evals, CI). Even alone, this is more than most production MCP teams have done. Tag `phase-1-complete` and stop here if you need to; the rest is still reachable later.
+2. **Weeks 6-7** (OAuth + tenancy) and **Weeks 8-9** (containerised deploy + OTel). The production readiness spine. Skipping either leaves you with a toy.
 3. **Week 12** (security). Even a 2-hour threat-model pass is worth far more than zero.
-4. **Weeks 4-5** (protocol internals) and **Weeks 10-11** (cost + load). Important, but recoverable later if you know the Phase-1 and Phase-3/4 material cold.
+4. **Weeks 4-5** (protocol internals) and **Weeks 10-11** (cost + load). Important, but recoverable later if you know the Phase 1 and Phase 3-4 material cold.
 
 ## When the pathway fails you
 
