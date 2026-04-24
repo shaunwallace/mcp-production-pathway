@@ -23,18 +23,75 @@ Three memos across the pathway: **Phase 0** (why MCP, Week 1), **Phase 3** (iden
 
 ## Artefact evolution
 
-Five artefacts grow deliberately across the pathway, plus a consumer README and a runbook that start mid-pathway. This table is the single place to see how your workbook accumulates capability.
+Five artefacts grow deliberately across the pathway, plus a consumer README and a runbook that start mid-pathway. The per-phase tables below are the single place to see how your workbook accumulates capability. Empty cells (—) mean the artefact doesn't change that week.
 
-| Artefact | W2 | W3 | W4 | W5 | W6-7 | W8 | W9 | W10 | W11 | W12 |
-|---|---|---|---|---|---|---|---|---|---|---|
-| **Server** | stdio, 4-6 tools + 1 resource | — | HTTP transport | +sessions, +persistence, +sampling, +elicitation | +OAuth, +tenancy, +audit | +container, +probes, +graceful shutdown | — | +caching, +versioning | — | +input hardening, +PII policy |
-| **Harness** | tool-use loop, ~40 lines | +eval mode | +HTTP client | +resume, +sampling responder | +OAuth (PKCE) client | — | +trace assertions | +cost capture | +concurrent mode | +injection eval |
-| **Eval set** | — | 12-20 cases | +HTTP regression | +session cases | +auth cases | — | — | +cost budgets | +latency budgets | +injection cases |
-| **docker-compose** | — | — | — | server + Postgres | +local issuer | +containerised server | +Jaeger, +Prometheus | +Grafana (optional) | +k6 one-shot | — |
-| **CI workflow** | — | vitest + evals + dependabot | — | — | +auth setup | +image build + audit | — | +cost report | +scheduled load | +security scan |
-| **Error taxonomy** | canonical shape | — | +transport errors | +session errors | +auth errors, +rate-limit | — | — | — | — | +injection-attempt flags |
-| **RUNBOOK.md** | — | — | — | — | — | created: SLO breach, rollback | +trace-debug recipes | +cost anomaly | +load-incident playbook | +security incident |
-| **Consumer README** | stub: tools list | — | +HTTP endpoint | — | +auth section | +deployed URL | — | — | — | +SLA language |
+### Phase 1 — Build and measure (W2-3)
+
+| Artefact | W2 | W3 |
+|---|---|---|
+| **Server** | stdio, 4-6 tools + 1 resource | — |
+| **Harness** | tool-use loop, ~40 lines | +eval mode |
+| **Eval set** | — | 12-20 cases |
+| **CI workflow** | — | vitest + evals + dependabot |
+| **Error taxonomy** | canonical shape | — |
+| **Consumer README** | stub: tools list | — |
+
+### Phase 2 — Protocol (W4-5)
+
+| Artefact | W4 | W5 |
+|---|---|---|
+| **Server** | HTTP transport | +sessions, +persistence, +sampling, +elicitation |
+| **Harness** | +HTTP client | +resume, +sampling responder |
+| **Eval set** | +HTTP regression | +session cases |
+| **docker-compose** | — | server + Postgres |
+| **Error taxonomy** | +transport errors | +session errors |
+| **Consumer README** | +HTTP endpoint | — |
+
+### Phase 3 — Identity (W6-7)
+
+| Artefact | W6-7 |
+|---|---|
+| **Server** | +OAuth, +tenancy, +audit |
+| **Harness** | +OAuth (PKCE) client |
+| **Eval set** | +auth cases |
+| **docker-compose** | +local issuer |
+| **CI workflow** | +auth setup |
+| **Error taxonomy** | +auth errors, +rate-limit |
+| **Consumer README** | +auth section |
+
+### Phase 4 — Deploy (W8-9)
+
+| Artefact | W8 | W9 |
+|---|---|---|
+| **Server** | +container, +probes, +graceful shutdown | — |
+| **Harness** | — | +trace assertions |
+| **docker-compose** | +containerised server | +Jaeger, +Prometheus |
+| **CI workflow** | +image build + audit | — |
+| **RUNBOOK.md** | created: SLO breach, rollback | +trace-debug recipes |
+| **Consumer README** | +deployed URL | — |
+
+### Phase 5 — Scale (W10-11)
+
+| Artefact | W10 | W11 |
+|---|---|---|
+| **Server** | +caching, +versioning | — |
+| **Harness** | +cost capture | +concurrent mode |
+| **Eval set** | +cost budgets | +latency budgets |
+| **docker-compose** | +Grafana (optional) | +k6 one-shot |
+| **CI workflow** | +cost report | +scheduled load |
+| **RUNBOOK.md** | +cost anomaly | +load-incident playbook |
+
+### Phase 6 — Security (W12)
+
+| Artefact | W12 |
+|---|---|
+| **Server** | +input hardening, +PII policy |
+| **Harness** | +injection eval |
+| **Eval set** | +injection cases |
+| **CI workflow** | +security scan |
+| **Error taxonomy** | +injection-attempt flags |
+| **RUNBOOK.md** | +security incident |
+| **Consumer README** | +SLA language |
 
 By W12, `docker compose up` brings up your full production-shaped stack locally. That's not a bonus — it's the W12 checkpoint.
 
