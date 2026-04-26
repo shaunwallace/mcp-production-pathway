@@ -20,6 +20,7 @@
     "@astrojs/starlight": "^0.38.3",
     "@fontsource/inter": "^5.2.8",
     "@fontsource/jetbrains-mono": "^5.2.8",
+    "@fontsource/poppins": "^5.2.7",
     "@six-tech/starlight-theme-six": "^1.0.16",
     "astro": "^6.0.1",
     "sharp": "^0.34.2"

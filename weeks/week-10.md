@@ -1,6 +1,9 @@
 ---
 title: Week 10 — Caching, cost attribution, tool versioning (Phase 5, part 1)
 status: outline
+banner:
+  content: |
+    Outline only — full curriculum lands in a future release.
 ---
 
 # Week 10 — Caching, cost attribution, tool versioning (Phase 5, part 1)

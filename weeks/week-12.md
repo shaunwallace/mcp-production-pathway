@@ -1,6 +1,9 @@
 ---
 title: Week 12 — Security, threat model, PII, close-out (Phase 6)
 status: outline
+banner:
+  content: |
+    Outline only — full curriculum lands in a future release.
 ---
 
 # Week 12 — Security, threat model, PII, close-out (Phase 6)

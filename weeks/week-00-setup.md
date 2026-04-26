@@ -8,6 +8,10 @@ title: Week 0 — Setup and prerequisites
 
 This is a one-shot setup guide. Do it before Week 1. Everything here is a dependency that will stall you later if it's missing.
 
+:::tip[One-shot setup]
+Do this before Week 1, not alongside it. Week 1 is reading-heavy and won't surface missing dependencies — you'll only hit them in Week 2, mid-implementation, when they cost the most.
+:::
+
 ## Accounts and keys
 
 ### Anthropic API key
@@ -15,6 +19,10 @@ This is a one-shot setup guide. Do it before Week 1. Everything here is a depend
 1. Sign up at <https://console.anthropic.com/>.
 2. Create an API key from the API Keys section.
 3. **Set a monthly spend limit** in the Billing section before you use it. $10-20 is enough for the early weeks; bump later if eval runs push you over. This is the cheapest protection against a runaway harness loop.
+
+:::caution[Set the spend limit *before* your first API call]
+A buggy harness can fire hundreds of requests in a loop before you notice. The spend limit is a hard ceiling — it costs nothing to set and saves you from a surprise bill.
+:::
 4. Export the key in your shell profile so the harness picks it up:
 
    ```bash
@@ -50,6 +58,10 @@ Week 2 has you build a server exposing 4-6 tools against a real third-party API.
 | **Raindrop.io or Readwise** | bookmarks, highlights, tags | ~10 min | Read-heavy; lighter on writes. Good for a research or knowledge-management angle. |
 | **Home Assistant** | device states, automations, sensor reads | ~30 min | Interesting precisely *because* some operations are destructive (turning off heating). Only if you already have it running. |
 
+:::note[No strong preference?]
+Pick **GitHub**. Universal account ownership, mature API, primitives map cleanly to a 4–6 tool surface. Just don't open the `@modelcontextprotocol/servers/github` reference until after you've shipped your own Week 2 design.
+:::
+
 **If you have no strong preference, pick GitHub.** It has the universal-account advantage, the API is mature and boring in the good sense, and the primitives (issues, comments, PRs) map to a clean 4-6 tool surface. The only discipline required: don't open the `@modelcontextprotocol/servers/github` reference until after you've shipped your own Week 2 design.
 
 **What not to pick:**
@@ -74,6 +86,10 @@ Notion has one non-obvious step that deserves calling out because it's the most 
 1. Go to <https://www.notion.so/my-integrations>, create an **internal integration**. (Public integrations go through OAuth and are a Phase 3 concern.)
 2. Copy the integration token (starts with `secret_` or `ntn_`). Save to `.env` as `NOTION_API_KEY=...`.
 3. **Critical step:** the integration has no access to any pages by default. For each test page you want accessible, open it, click the top-right menu → **Connections → add your integration → Confirm**. Child pages inherit. Without this step every API call returns a confusing 404.
+
+:::danger[Most common Week 2 stall]
+Forgetting the Connections step is the #1 reason Notion-backed servers stall in Week 2. The 404 looks like an auth bug but isn't — re-check page connections before debugging your token.
+:::
 4. Populate 3-5 test pages and one small database.
 
 ## Runtimes and CLI tools
@@ -96,10 +112,16 @@ Download from <https://claude.ai/download>. Available for macOS and Windows.
 
 Config file path (you'll edit this in Week 2 to register your server):
 
-- **macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
-- **Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
+<!-- tabs -->
+### macOS
+`~/Library/Application Support/Claude/claude_desktop_config.json`
+### Windows
+`%APPDATA%\Claude\claude_desktop_config.json`
+<!-- /tabs -->
 
-Linux users: Claude Desktop doesn't ship a Linux build at time of writing. You can still complete Phases 0-2 using only the MCP Inspector and the harness — Claude Desktop registration is helpful but not strictly required until Phase 3. Check the Claude Desktop download page for any changes since.
+:::note[Linux users]
+Claude Desktop doesn't ship a Linux build at time of writing. You can still complete Phases 0–2 using only the MCP Inspector and the harness — Claude Desktop registration is helpful but not strictly required until Phase 3. Check the download page for changes.
+:::
 
 ### MCP Inspector
 
@@ -113,8 +135,13 @@ Run it once now against no server just to confirm the package pulls and the UI o
 
 ## Your workbook repo
 
+:::caution[Don't work in this repo]
+This is the public **textbook** repo. Your exercises go in a private **workbook** repo created from it via *Use this template*. See [REPO-ARCHITECTURE.md](/repo-architecture) for the full split.
+:::
+
 Don't do your work in *this* repo. This is the public pathway template; the work goes in a private workbook that you template-instantiate from it. Three steps:
 
+<!-- steps -->
 1. In the GitHub UI for the pathway repo, click **Use this template → Create a new repository**.
 2. Name it something personal (e.g. `mcp-workbook`), set **Private**.
 3. Clone locally and bootstrap:

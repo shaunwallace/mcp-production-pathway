@@ -9,6 +9,10 @@ Single source of truth for which Claude model the harness targets. The scaffolds
 
 **Last updated:** 2026-04-20.
 
+:::caution[Pinned — bump here when models rotate]
+Don't hard-code model IDs in week briefs, harness code, or memos. They reference this file. When Anthropic ships a new generation, update the table below and the harness picks it up.
+:::
+
 ## Current pins
 
 | Role | Model ID | Why |

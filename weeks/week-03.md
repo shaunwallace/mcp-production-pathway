@@ -6,6 +6,10 @@ title: Week 3 — Iterate, measure, CI (Phase 1, part 2)
 
 **Time budget:** 8 to 12 hours across three or four sittings.
 
+:::tip[Why most teams ship a mediocre server]
+Week 2 proves the plumbing works. Week 3 measures whether the **tool design** is any good — and locks that measurement into CI so regressions surface automatically. Skipping this is why so many production MCP servers underperform.
+:::
+
 ## What you'll have by the end of the week
 
 - A first eval dataset covering representative user queries against your server
@@ -36,6 +40,7 @@ Pulling CI forward from the original Week 10 position is deliberate. Evals witho
 
 ## The iteration loop
 
+<!-- steps -->
 1. **Write a first eval set.** 12-20 representative prompts, each tagged with the expected tool (or `none`).
 2. **Run the harness against the eval set.** Record which tool the model selected, with what arguments, and whether the selection matched.
 3. **Identify failure modes.** Wrong tool? Malformed args? Empty-success (the tool "succeeded" but returned content the model treated as useful when it wasn't)?

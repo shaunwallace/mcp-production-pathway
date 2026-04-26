@@ -3,6 +3,10 @@ title: ADR template
 description: Blank scaffold for architectural decision records.
 ---
 
+:::tip[See the shape in practice]
+A worked example covering SDK, backend, and LLM provider choice: [ADR example](examples/adr-example.md).
+:::
+
 # ADR NNNN: [Short title of the decision]
 
 **Status:** proposed | accepted | superseded by ADR-XXXX  

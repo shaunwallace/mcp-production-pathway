@@ -1,6 +1,9 @@
 ---
 title: Week 8 — Docker, deployment, SLOs, secrets (Phase 4, part 1)
 status: outline
+banner:
+  content: |
+    Outline only — full curriculum lands in a future release.
 ---
 
 # Week 8 — Docker, deployment, SLOs, secrets (Phase 4, part 1)

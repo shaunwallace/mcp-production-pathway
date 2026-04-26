@@ -2,6 +2,10 @@
 title: "ADR example — SDK, backend, and LLM provider"
 ---
 
+:::note[Calibration, not an answer key]
+Worked example for the [ADR template](../adr.md).
+:::
+
 # ADR 0001: SDK, backend, and LLM provider for the pathway
 
 **Status:** accepted  

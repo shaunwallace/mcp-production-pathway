@@ -3,6 +3,10 @@ title: Progress entry template
 description: Append-only log shape used across all 12 weeks.
 ---
 
+:::tip[See the shape in practice]
+Two filled-in entries showing the "Did / Saw / Next / Stuck on" form: [Progress entry example](examples/progress-entry-example.md).
+:::
+
 # Weekly progress log
 
 One entry per working session. Append-only. Don't edit past entries, they're a record of how I actually thought at the time.

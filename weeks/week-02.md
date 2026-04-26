@@ -6,6 +6,10 @@ title: Week 2 — Build your first server (Phase 1, part 1)
 
 **Time budget:** 8 to 12 hours across three or four sittings.
 
+:::tip[Where the real work is]
+The protocol layer is mostly handled by the SDK. The work — and the learning — is in **tool design**: naming, granularity, error shapes, idempotency. Spend your time there.
+:::
+
 ## What you'll have by the end of the week
 
 - A working MCP server exposing 4-6 tools and 1 resource against a real backend
@@ -273,9 +277,122 @@ describe("search_issues", () => {
 
 Three tests cover the three outcomes the model sees: invalid args, hits, zero-hits-but-not-an-error. The last one is how you start guarding against **empty success** — a tool that returns "success" with useless content, which Week 3 explores in depth.
 
+## Tool annotations: telling clients what your tool does
+
+The `searchIssues` definition above is correct as far as it goes, but it's missing four hints that the 2025-06-18 spec added: **tool annotations**. They sit on the tool object alongside `name`/`description`/`inputSchema`, and they tell the client what kind of operation this is so the client can render appropriate UX — a "skip review" badge for read-only tools, a confirmation prompt for destructive ones.
+
+```ts
+export const searchIssues = {
+  name: "search_issues",
+  description: "...",
+  inputSchema: zodToJsonSchema(SearchIssuesInput, { target: "openApi3" }),
+  annotations: {
+    title: "Search issues",        // human-readable label clients display
+    readOnlyHint: true,             // does not modify any state
+    destructiveHint: false,         // never destroys data
+    idempotentHint: true,            // calling twice = same effect as once
+    openWorldHint: true,             // reaches an external system (GitHub)
+  },
+  handler: instrument(...),
+};
+```
+
+| Annotation | Meaning | True when |
+|---|---|---|
+| `readOnlyHint` | Tool does not modify any state | All `search_*`, `read_*`, `list_*` tools |
+| `destructiveHint` | If not read-only, does the write destroy data? | `delete_*`, `close_*`, `complete_*` where state can't be recovered cheaply |
+| `idempotentHint` | Calling N times with the same args has the same effect as calling once | All read tools; `update_status` usually; `comment_on_*` is **not** |
+| `openWorldHint` | Tool reaches systems beyond the server itself | Any backend-hitting tool; false for server-internal utilities |
+
+Applied to the GitHub starter set:
+
+| Tool | readOnly | destructive | idempotent | openWorld |
+|---|---|---|---|---|
+| `search_issues` | ✓ | ✗ | ✓ | ✓ |
+| `read_issue` | ✓ | ✗ | ✓ | ✓ |
+| `list_pull_requests` | ✓ | ✗ | ✓ | ✓ |
+| `create_issue` | ✗ | ✗ | ✗ | ✓ |
+| `comment_on_issue` | ✗ | ✗ | ✗ | ✓ |
+| `close_issue` | ✗ | ✓ | ✓ | ✓ |
+
+`close_issue` is destructive *and* idempotent — closing a closed issue is a no-op, but the close itself can't be undone in a single call, so the destructive bit stays set. The common mistake is marking `comment_on_issue` as idempotent because "the API still accepts it." It isn't — two calls create two comments. The hint describes the user-observable effect, not the API's tolerance.
+
+:::caution[Annotations are hints, not contracts]
+The spec is explicit: a malicious server can lie. Clients should treat annotations as UX guidance, not as a security boundary. Your real authorization happens at the backend, not on the strength of `readOnlyHint: true`.
+:::
+
+## Structured results with `outputSchema`
+
+The `searchIssues` handler above returns text content with newline-joined results. That works, but it asks the model to parse strings — fragile, and the model occasionally hallucinates fields the text doesn't contain. Worse for evals: a regex-based pass check on `"#42"` will silently keep passing if the rendering changes shape.
+
+The 2025-06-18 spec added `outputSchema` for tools that return structured data. Declare the output shape, return a typed object alongside the text, and clients (and your eval harness) can parse it directly.
+
+```ts
+const SearchIssuesOutput = z.object({
+  results: z.array(z.object({
+    number: z.number(),
+    title: z.string(),
+    state: z.enum(["open", "closed"]),
+    url: z.string().url(),
+  })),
+  total: z.number(),
+  truncated: z.boolean(),
+});
+
+export const searchIssues = {
+  name: "search_issues",
+  description: "...",
+  inputSchema: zodToJsonSchema(SearchIssuesInput, { target: "openApi3" }),
+  outputSchema: zodToJsonSchema(SearchIssuesOutput, { target: "openApi3" }),
+  annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: true },
+  handler: instrument("search_issues", async (raw) => {
+    const parsed = SearchIssuesInput.safeParse(raw);
+    if (!parsed.success) {
+      return toolError(ToolErrorCode.InvalidArgs, "Invalid arguments", parsed.error.issues);
+    }
+    const client = new GithubClient(process.env.GITHUB_TOKEN!);
+    const hits = await client.searchIssues(parsed.data);
+    const structured = SearchIssuesOutput.parse({
+      results: hits.slice(0, parsed.data.limit).map(h => ({
+        number: h.number, title: h.title, state: h.state, url: h.html_url,
+      })),
+      total: hits.length,
+      truncated: hits.length > parsed.data.limit,
+    });
+    return {
+      content: [{ type: "text", text: JSON.stringify(structured, null, 2) }],
+      structuredContent: structured,
+    };
+  }),
+};
+```
+
+Two things changed from the earlier version:
+
+- `outputSchema` is declared alongside `inputSchema`. Same `zod-to-json-schema` derivation; the zod schema stays the single source of truth.
+- The handler returns **both** `content` (for older clients that only consume text) and `structuredContent` (the typed object modern clients prefer). Backward-compatible by construction.
+
+The error path is unchanged. The convention is now:
+
+- **Success** → return `structuredContent` (plus a `content` text fallback).
+- **Tool-execution error** → return `{ isError: true, content: [...] }` as before. The model reads `code` and recovers.
+- **Protocol error** (server crashed, malformed request) → bubbles up as a JSON-RPC error from the SDK, never reaches the tool handler. You don't write code for this case; the SDK handles it.
+
+When to use `outputSchema`:
+
+- **Yes** — any tool returning data the model will reason about, list, or filter. All `search_*`, `read_*`, `list_*` tools. Anything currently returning a stringified table.
+- **No** — tools whose entire output is a single human-readable acknowledgement. `close_issue` → "Issue #42 closed" is fine as plain text.
+- **Maybe** — write tools. Returning the created entity's structured shape lets the model reference its ID without a follow-up `read_*` call. Worth doing.
+
+Update your starter set: add `outputSchema` to the three read tools and the resource handler this week. The write tools can stay text-only; revisit in Week 3 if eval failures point at parsing.
+
 ## Harness v0 (`harness/src/index.ts`)
 
 Keep it under 300 lines — enforced by `scripts/check-line-count.sh`. The goal is a test bench, not a framework. Core loop:
+
+:::caution[300-line ceiling is load-bearing]
+The cap exists so the harness stays readable in one sitting. Once it grows past 300 lines, people start treating it as a framework and stop reading it — that's when eval debugging gets painful. If you hit the ceiling, simplify rather than raise it.
+:::
 
 ```ts
 // abbreviated — real file handles errors, prints trace, flags CLI args
@@ -329,7 +446,7 @@ Start a consumer-facing README this week — written for a hypothetical person o
 
 Minimum viable version:
 
-```markdown
+````markdown
 # <Your server name>
 
 An MCP server wrapping <backend>. Exposes the following tools and resources.
@@ -361,7 +478,7 @@ An MCP server wrapping <backend>. Exposes the following tools and resources.
 ## Errors
 
 See `src/errors.ts`. All tools return `{ code, message, details }` on failure; `code` is one of six values.
-```
+````
 
 This file grows every time the surface changes. In Week 4 you add an HTTP connection section; in Week 6-7 you add an auth section; in Week 8 you add the deployed URL. Treat it like the compose file — a visible, evolving artefact.
 
@@ -371,7 +488,7 @@ At the end of the week, four tracked artefacts are in their W2 state. Every subs
 
 | Artefact | W2 baseline |
 |---|---|
-| Server | 4-6 tools + 1 resource over stdio, zod-validated, pino-logged, `instrument()`-wrapped |
+| Server | 4-6 tools + 1 resource over stdio, zod-validated, pino-logged, `instrument()`-wrapped, annotations + `outputSchema` on read tools |
 | Harness | ~40-line tool-use loop over stdio, prints trace |
 | Tests | vitest unit + MSW contract tests; all passing |
 | Error taxonomy | 6 codes; `{ code, message, details }` shape |
@@ -396,6 +513,8 @@ At the end of the week, four tracked artefacts are in their W2 state. Every subs
 - [ ] Every tool call emits a structured log line via `instrument()`
 - [ ] `npm test` passes in `server/` with unit + MSW contract tests for every tool
 - [ ] Error taxonomy (6 codes) is used consistently across tools
+- [ ] Tool annotations (`readOnlyHint`, `destructiveHint`, `idempotentHint`, `openWorldHint`) set correctly on every tool
+- [ ] `outputSchema` + `structuredContent` on every read tool (`search_*`, `read_*`, `list_*`)
 - [ ] Consumer README stub committed with tools, resource, errors sections
 - [ ] Tool-design note committed
 - [ ] `bash scripts/check-line-count.sh` passes (harness under 300 lines)
@@ -407,11 +526,15 @@ Tool design is the new API design, and most organisations have 15 years of REST 
 
 ## Common pitfalls
 
+:::danger[The five ways Week 2 goes wrong]
 - **Starting with the implementation.** Write the definitions first.
 - **Making a generic `query` tool.** Split it — generic names mean random selection.
 - **Returning stack traces as errors.** Use the six-code taxonomy; the model can reason about codes, not traces.
 - **Skipping the resource.** It's not decorative; it's a protocol primitive. Graduates who've never built one have a credibility gap.
 - **Testing only one prompt.** Test ambiguous prompts, test prompts that should match nothing.
+- **Lying with annotations.** Marking a write tool `readOnlyHint: true` because "the client UX is nicer" trains the wrong instinct. Annotations describe behaviour, not the UX you wish you had.
+- **Skipping `outputSchema` on read tools.** You'll write regex-based eval checks against rendered text, the rendering will change, and your evals will silently pass on broken output.
+:::
 
 ## Optional rabbit holes
 

@@ -7,6 +7,10 @@ description: The textbook-workbook split and git conventions.
 
 This document explains how the public learning pathway relates to your private workbook, and the git conventions that hold them together. Read this once before Week 1.
 
+:::note[Two repos, two roles]
+**Textbook** (this repo) = curriculum, scaffolds, templates. Stays pristine. **Workbook** (your private copy, template-instantiated) = your code, your memos, your evals. The two diverge deliberately.
+:::
+
 ## The textbook-and-workbook split
 
 Two repos, two roles.

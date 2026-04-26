@@ -40,24 +40,27 @@ Five artefacts grow deliberately across the pathway, plus a consumer README and 
 
 | Artefact | W4 | W5 |
 |---|---|---|
-| **Server** | HTTP transport | +sessions, +persistence, +sampling, +elicitation |
-| **Harness** | +HTTP client | +resume, +sampling responder |
-| **Eval set** | +HTTP regression | +session cases |
-| **docker-compose** | — | server + Postgres |
-| **Error taxonomy** | +transport errors | +session errors |
-| **Consumer README** | +HTTP endpoint | — |
+| **Server** | HTTP + hardening (Origin/Host, body limits, timeouts, idempotency keys) | +Postgres-backed sessions, +event log persistence, +progress/cancellation, +prompts, +roots |
+| **Harness** | +HTTP client, +`Idempotency-Key` per write | +resume from Postgres, +prompts/list+get, +roots advertise, +cancel-on-Ctrl-C |
+| **Eval set** | +HTTP regression, +transport-edge cases | +session resumption, +prompts, +completion, +roots, +cancellation |
+| **docker-compose** | — | server + Postgres + migrate one-shot |
+| **Error taxonomy** | unchanged (6 codes; transport folds into `backend_failure` with `details.cause`) | unchanged (roots → `forbidden`, cancel → `backend_failure`, both via `details.cause`) |
+| **Consumer README** | +HTTP endpoint, +session lifecycle | +prompts, +roots |
+| **THREATS.md** | new: Origin/Host, body-size, idempotency | +path traversal (roots), +session fixation |
 
 ### Phase 3 — Identity (W6-7)
 
-| Artefact | W6-7 |
-|---|---|
-| **Server** | +OAuth, +tenancy, +audit |
-| **Harness** | +OAuth (PKCE) client |
-| **Eval set** | +auth cases |
-| **docker-compose** | +local issuer |
-| **CI workflow** | +auth setup |
-| **Error taxonomy** | +auth errors, +rate-limit |
-| **Consumer README** | +auth section |
+| Artefact | W6 | W7 |
+|---|---|---|
+| **Server** | +RS role: PRM (RFC 9728), JWT validation w/ `aud` (RFC 8707), `WWW-Authenticate` discovery, scope enforcement, API-key fallback, audit log (plain JSONL) | +tenant resolution from JWT, +app-layer + RLS scoping, +per-tenant quota (token bucket), +hash-chained audit log |
+| **Harness** | static token from `MCP_TOKEN` (server validation is the W6 focus) | +DCR (RFC 7591), +full PKCE flow, +`resource=` on authorize/token/refresh, +401-driven re-auth |
+| **Local issuer** | new: discovery (RFC 8414), authorize w/ PKCE, token w/ `aud`, refresh-rotation w/ reuse detection (revokes family), revoke (RFC 7009), introspect (RFC 7662) | +`/register` (RFC 7591), tenant claim in issued tokens |
+| **Eval set** | rerun phase-1 under auth, +missing-token, +expired, +wrong-audience, +insufficient-scope | +three-tenant duplicated phase-1 (isolation), +`tenancy.cross_tenant_leak`, +`quota.exceeded.gracefully`, +`dcr.first_connect` |
+| **docker-compose** | +local-issuer service | +`audit-verify` cron service |
+| **Error taxonomy** | unchanged (6 codes; auth folds into existing codes via `details.cause`) | unchanged (`rate_limited` carries `details.retry_after_ms`) |
+| **Consumer README** | +Authentication section (PRM URL, scopes, API-key issuance) | +DCR subsection, +`Retry-After` semantics |
+| **THREATS.md** | +token replay across servers, +JWT alg confusion, +stolen refresh token, +API-key leakage | +cross-tenant leak, +tenant impersonation, +quota bypass burst, +audit mutation (w/ tamper-evident-vs-tamper-proof gap), +rogue DCR |
+| **Memos** | — | `02-identity-and-tenancy.md` (~800 words) |
 
 ### Phase 4 — Deploy (W8-9)
 
@@ -127,11 +130,11 @@ Week 2 instrument() wrapper
 
 Week 2 harness
   ├─ eval mode added in Week 3
-  ├─ HTTP transport added in Week 4
-  ├─ reconnect + sampling responder in Week 5
+  ├─ HTTP transport + idempotency keys added in Week 4
+  ├─ reconnect + prompts + roots + cancellation in Week 5
   ├─ OAuth (PKCE) client added in Week 7
   ├─ cost capture in Week 10
-  ├─ concurrency and load in Week 11
+  ├─ concurrency, sampling responder, elicitation responder in Week 11
   └─ adversarial prompts in Week 12
 
 Week 2 test suite (vitest + MSW)

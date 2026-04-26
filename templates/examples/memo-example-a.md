@@ -2,6 +2,10 @@
 title: "Memo example A — Why MCP is plumbing, not product"
 ---
 
+:::note[Calibration, not an answer key]
+Worked example for the [memo template](../memo.md). See also [Memo example B](memo-example-b.md) — same brief, different shape.
+:::
+
 # Why MCP is plumbing, not product
 
 **Audience:** my exec team at [invented company — a B2B developer tooling startup]  

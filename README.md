@@ -44,25 +44,26 @@ The right way to use it is to create your own private workbook from this templat
 |-------|-------|-------|--------|
 | 0 | 1 | Mental model: what MCP is, what it isn't | **Live** |
 | 1 | 2-3 | First server, tool design, evals, CI | **Live** |
-| 2 | 4-5 | HTTP transport, sessions, sampling, persistence | Outline |
-| 3 | 6-7 | OAuth, multi-tenancy, audit logging | Outline |
+| 2 | 4-5 | HTTP transport + hardening, sessions, persistence, prompts, roots | Outline |
+| 3 | 6-7 | OAuth 2.1 (RFCs 9728/8707/7591), DCR, multi-tenancy, tamper-evident audit, quotas | Outline |
 | 4 | 8-9 | Containerised deploy, SLOs, secrets, OpenTelemetry, metrics | Outline |
 | 5 | 10-11 | Caching, cost attribution, load testing | Outline |
 | 6 | 12 | Security, threat model, PII, hostile inputs, close-out | Outline |
 
 ### What each week covers
 
+<!-- card-grid -->
 - **Week 1 — Mental model.** Spec, JSON-RPC 2.0, MCP's honest limits. Output: a "why MCP" memo and an ADR pinning SDK and backend choice. This is the only Phase 0 memo; two more land at Phase 3 and Phase 6.
 - **Week 2 — First server.** Design 4-6 tools and one resource against a real backend. Fill in the server scaffold with zod validation, a `pino` logger, and an `instrument()` wrapper. Write unit tests (vitest) and contract tests (MSW) against recorded fixtures. Build a ~40-line agent harness over stdio. Output: a working end-to-end MCP server exercised in Claude Desktop and the Inspector, with a test suite and a canonical error taxonomy.
 - **Week 3 — Iterate, measure, CI.** Write an eval dataset. Extend the harness to run it. Use pass rate to drive rename/redesign iterations. Wire evals and vitest into GitHub Actions. Add empty-success detection. Output: a regression guard on CI that reruns every subsequent phase.
 - **Week 4 — Streamable HTTP transport.** Port from stdio to HTTP using `hono`. Test client portability against Inspector, Claude Desktop, Cursor. Add transport-boundary validation, idempotency keys, timeouts. Rerun the Week 3 evals under HTTP.
-- **Week 5 — Sessions, sampling, elicitation, persistence.** Implement session resumption, progress notifications, cancellation, sampling (server-initiated completions), elicitation. Introduce a persistence layer (better-sqlite3 dev, Postgres via docker-compose for prod-shape). Output: the compose file that grows into your local production stack.
-- **Week 6 — OAuth 2.1 server side.** Discovery, token validation, scopes. Include a minimal local issuer (`jose`-based, ~60 lines) so the whole flow works offline. Audit logging introduced.
-- **Week 7 — Harness as OAuth client, multi-tenancy.** PKCE, token refresh, tenant isolation, per-tenant quotas. Phase 3 memo.
+- **Week 5 — Sessions, persistence, prompts, roots.** Promote the W4 in-memory session and event stores to Postgres via docker-compose with versioned migrations. Wire progress notifications and cancellation on a long-running tool. Implement two prompts (one with arguments + completion) and roots so the server respects what the client is willing to expose. Output: the compose file that grows into your local production stack.
+- **Week 6 — OAuth 2.1 done correctly for MCP.** Authorization Server / Resource Server separation per the 2025 MCP spec. Protected Resource Metadata (RFC 9728), Resource Indicators (RFC 8707) for token-audience binding, PKCE, refresh-token rotation with reuse detection, revocation (RFC 7009), introspection (RFC 7662), API-key fallback. ~100-line local issuer (`jose`-based) means the whole flow runs offline. Audit log introduced (plain JSONL — tamper-evident in W7).
+- **Week 7 — DCR, multi-tenancy, tamper-evident audit, quotas.** Real OAuth client in the harness with PKCE + Dynamic Client Registration (RFC 7591). Tenant scoping at two layers (app-layer query builder + Postgres RLS) for defence-in-depth. Per-tenant token-bucket quotas. Hash-chained audit log with a daily verification job. Phase 3 memo — identity and tenancy tradeoffs.
 - **Week 8 — Docker, deployment, SLOs, secrets.** Multi-stage Dockerfile, health probes, graceful shutdown, rollback drill. SLOs (p95, error budget, concurrency). Secrets via file-mount locally and Secret Manager in cloud. Local-only track is a full checkpoint; Cloud Run push is an optional extension. `RUNBOOK.md` created.
 - **Week 9 — OpenTelemetry, traces, metrics.** Replace the Week 2 `instrument()` wrapper with OTel spans. Add RED metrics (`prom-client`). Scrape locally with Prometheus; Jaeger for traces — both in compose.
 - **Week 10 — Evals dashboard, cost attribution, caching, tool versioning.** Attribute cost per session, tool, tenant. Add Anthropic prompt caching and tool-result caching with cache-hit metrics. Handle tool schema versioning. ADR on attribution model.
-- **Week 11 — Load testing, cost at scale.** k6 in compose. Concurrent-session load. Model cost at 10× and 100× expected volume. Find the bottleneck (it is rarely the one you'd guess).
+- **Week 11 — Load testing, cost at scale, sampling and elicitation under load.** k6 in compose. Concurrent-session load. Implement sampling (server-initiated completions through the client's model) and elicitation (mid-tool user prompts) — both introduced here so their cost-and-latency story is visible under contention, not theoretical. Model cost at 10× and 100× expected volume with the sampling multiplier broken out. Find the bottleneck (it is rarely the one you'd guess).
 - **Week 12 — Security, threat model, PII, close-out.** Threat model the full stack. Prompt-injection resistance. Tenant isolation scrutiny. Data retention and PII policy. Dependency security scan. Phase 6 memo; short closing callout on adjacent topics (agent frameworks, memory, A2A) deliberately out of scope for this pathway.
 
 ## Tooling choices

@@ -1,6 +1,9 @@
 ---
 title: Week 9 — OpenTelemetry, traces, metrics (Phase 4, part 2)
 status: outline
+banner:
+  content: |
+    Outline only — full curriculum lands in a future release.
 ---
 
 # Week 9 — OpenTelemetry, traces, metrics (Phase 4, part 2)

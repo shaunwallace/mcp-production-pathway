@@ -6,6 +6,10 @@ title: Week 1 — Mental model (Phase 0)
 
 **Time budget:** 4 to 6 hours across two sittings.
 
+:::tip[Resist the urge to skip the reading]
+The mental-model work is the reference frame for the next eleven weeks. An hour with the spec saves ten hours arguing about the wrong things later.
+:::
+
 ## What you'll have by the end of the week
 
 - A clear, unhyped mental model of what MCP is and what it isn't

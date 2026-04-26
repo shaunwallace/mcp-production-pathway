@@ -2,6 +2,10 @@
 title: Harness trace example
 ---
 
+:::note[Calibration, not an answer key]
+Reference output for the harness you build in [Week 2](../../weeks/week-02.md) and extend in [Week 3](../../weeks/week-03.md).
+:::
+
 # Harness output — worked examples
 
 What healthy trace output looks like, for single-prompt mode and for eval mode. Use this to calibrate your own harness formatting in Weeks 2 and 3. If your output is noisier or less scannable than this, tighten it — the trace is a debugging tool, not a log dump.
@@ -51,6 +55,8 @@ Things this output avoids:
 
 - No stack traces on success. No ANSI colour codes in piped output. No emoji unless you're already in a team that uses them.
 - No raw JSON for args — a model-generated `query` of 600 characters would ruin the trace. Truncate or summarise.
+
+A note on result shape: tools that declare an `outputSchema` return `structuredContent` alongside the text fallback. The trace summary above shows the textual shape (`2 hits`, `4.2KB, 18 blocks`) — your harness should derive that summary from the structured object when present, and fall back to a `content[0].text.length` count when it's not. Keeping the trace one line per call regardless of result shape is what makes it scannable.
 
 ---
 
