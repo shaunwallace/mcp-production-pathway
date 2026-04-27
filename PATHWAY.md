@@ -66,12 +66,16 @@ Five artefacts grow deliberately across the pathway, plus a consumer README and 
 
 | Artefact | W8 | W9 |
 |---|---|---|
-| **Server** | +container, +probes, +graceful shutdown | — |
-| **Harness** | — | +trace assertions |
-| **docker-compose** | +containerised server | +Jaeger, +Prometheus |
-| **CI workflow** | +image build + audit | — |
-| **RUNBOOK.md** | created: SLO breach, rollback | +trace-debug recipes |
-| **Consumer README** | +deployed URL | — |
+| **Server** | +multi-stage container (digest-pinned, non-root), +`/health` + `/ready`, +SIGTERM drain, +deadline propagation (AsyncLocalStorage + AbortController), +retry budget w/ jittered backoff, +circuit breakers, +per-backend bulkheads, +unified idempotency store (transport + write tools), +response-size truncation, +pagination contract on `list_*` | +OTel SDK bootstrap, +`instrument()` rewritten to spans+metrics, +`prom-client` `/metrics`, +`mcp_tool_cost_usd` histogram (vehicle for W10), +pino `trace_id`/`span_id` mixin, +`redactForSpan` PII guard |
+| **Harness** | +`X-Request-Deadline-Ms`, +honour `Retry-After` from `rate_limited`, +cursor-paginated `list_*` calls | +`traceparent` extraction, +Jaeger URL on eval failures, +client-side parent span |
+| **Eval set** | unchanged | +`tracing.span_attrs_present`, +`tracing.no_pii_in_attrs` |
+| **docker-compose** | +built image (pinned Postgres major), +file-mount secrets | +Jaeger, +Prometheus, +Grafana (provisioned dashboards), +Alertmanager (rule files) |
+| **CI workflow** | +image build, +`npm audit` (moderate), +Trivy scan (HIGH/CRITICAL gate), +GHCR push w/ SHA + date tags | +`scripts/check-log-schema.mjs`, +`amtool check-config` |
+| **Error taxonomy** | unchanged (6 codes; deadline → `backend_failure` w/ `details.cause: "deadline_exceeded"`, circuit-open → `backend_failure`, retry-budget → `rate_limited`, truncation → `structuredContent.truncated`) | unchanged (`mcp.error.code` added as span attribute) |
+| **Observability artefacts** | — | new: `server/src/log-schema.json`, `observability/grafana/dashboards/mcp-overview.json`, `observability/alertmanager/rules.yml` |
+| **RUNBOOK.md** | created: SLOs (with explicit numbers), SLO-breach playbook, rollback, secret-rotation, first-30-minutes checklist | +trace-debug recipes (alert → runbook → Grafana → Jaeger chain) |
+| **Consumer README** | +`docker run` one-liner / deployed URL, +pagination contract, +truncation signal | — |
+| **THREATS.md** | +resource exhaustion (slow-loris via long deadlines), +retry amplification | +PII via span attributes (looser auth than logs) |
 
 ### Phase 5 — Scale (W10-11)
 
