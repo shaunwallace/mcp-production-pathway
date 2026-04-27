@@ -2,6 +2,10 @@
 title: "Memo example B — Build, watch, or ignore?"
 ---
 
+:::note[Calibration, not an answer key]
+Worked example for the [memo template](../memo.md). See also [Memo example A](memo-example-a.md) — same brief, different shape.
+:::
+
 # MCP: build, watch, or ignore?
 
 **Audience:** my CTO at [invented company — a mid-stage data platform]  

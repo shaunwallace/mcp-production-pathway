@@ -3,6 +3,10 @@ title: Memo template
 description: Blank memo scaffold for each phase's closing artefact.
 ---
 
+:::tip[See the shape in practice]
+Two worked examples solve the same Week 1 brief in different ways: [Memo example A](examples/memo-example-a.md) and [Memo example B](examples/memo-example-b.md). Calibration, not answer keys.
+:::
+
 # [Phase title or memo subject]
 
 **Audience:** [who this is written for — exec, self, future interviewer]  

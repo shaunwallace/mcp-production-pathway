@@ -44,6 +44,8 @@ Search the codebase for `TODO(week-2)` and `TODO(week-3)` for inline guidance. T
 - [ ] **Week 2:** Replace `hello` with your 4-6 designed tools. One file per tool in `src/tools/`.
 - [ ] **Week 2:** Each tool must emit a structured log line via the instrumentation middleware.
 - [ ] **Week 2:** Write thoughtful JSON schemas for tool inputs. The descriptions matter as much as the types.
+- [ ] **Week 2:** Set tool annotations (`readOnlyHint`, `destructiveHint`, `idempotentHint`, `openWorldHint`) so clients can render correct UX.
+- [ ] **Week 2:** Declare an `outputSchema` and return `structuredContent` for every read tool — text-only results fool eval regexes.
 - [ ] **Week 2:** Return structured errors (with `code` and `message`) rather than throwing raw exceptions.
 - [ ] **Week 3:** Add one read tool and one write tool at minimum; idempotency matters for writes.
 - [ ] **Week 3:** Consider which data should be a `resource` rather than a `tool`.

@@ -2,6 +2,10 @@
 title: Progress entry example
 ---
 
+:::note[Calibration, not an answer key]
+Worked example for the [progress entry template](../progress-entry.md).
+:::
+
 # Progress log entries (worked example)
 
 Two entries showing the "Did / Saw / Next / Stuck on" shape in practice. The progress log is the artefact you write most often — one entry per working session — so getting the shape right matters more here than in any other template.

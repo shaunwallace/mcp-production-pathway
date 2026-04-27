@@ -2,6 +2,10 @@
 title: Iteration log example
 ---
 
+:::note[Calibration, not an answer key]
+Worked example produced during [Week 3](../../weeks/week-03.md). No blank template — the log is just a numbered list in your workbook's `notes/`.
+:::
+
 # Week 3 iteration log (worked example)
 
 Two fully-worked entries. Real logs may have three or four. Notice the structure: each entry opens with one focused change, quotes the before/after pass rate, and names the residual failure class. That's the whole form.

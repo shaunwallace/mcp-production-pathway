@@ -5,7 +5,7 @@
 
 import { cp, mkdir, rm, readFile, writeFile } from "node:fs/promises";
 import { existsSync } from "node:fs";
-import { dirname, resolve } from "node:path";
+import { dirname, resolve, posix } from "node:path";
 import { fileURLToPath } from "node:url";
 
 // Starlight renders the `title` from frontmatter as the page H1.
@@ -62,9 +62,11 @@ function transformTrees(text) {
   return { text: replaced, transformed };
 }
 
-// Insert the FileTree import after any frontmatter block.
-function injectFileTreeImport(text) {
-  const importLine = `import { FileTree } from '@astrojs/starlight/components';\n\n`;
+// Insert the given Starlight component imports after any frontmatter block.
+// Pass the names that the page actually uses so the import list stays minimal.
+function injectComponentImports(text, names) {
+  if (names.length === 0) return text;
+  const importLine = `import { ${names.join(", ")} } from '@astrojs/starlight/components';\n\n`;
   const fmMatch = text.match(/^(---\n[\s\S]*?\n---\n)/);
   if (fmMatch) {
     return fmMatch[1] + "\n" + importLine + text.slice(fmMatch[1].length);
@@ -72,10 +74,98 @@ function injectFileTreeImport(text) {
   return importLine + text;
 }
 
+// Replace `<!-- steps -->` followed by a numbered list with a <Steps> wrapper
+// around the same list. Starlight's <Steps> styles ordered lists as a
+// numbered, vertically-spaced sequence. GitHub renders the marker as an
+// invisible HTML comment and the list as a normal numbered list.
+function transformSteps(text) {
+  let transformed = false;
+  const replaced = text.replace(
+    /<!-- steps -->\n((?:\d+\.\s[^\n]+\n(?:[ \t]+[^\n]*\n|\n(?=[ \t]))*)+)/g,
+    (_match, listBody) => {
+      transformed = true;
+      return `<Steps>\n\n${listBody.trimEnd()}\n\n</Steps>\n`;
+    },
+  );
+  return { text: replaced, transformed };
+}
+
+// Replace a `<!-- tabs -->` … `<!-- /tabs -->` block whose body contains
+// `### Label` sub-headings with a <Tabs><TabItem> structure. Each ### header
+// becomes a tab; the prose between headers is the tab body. On GitHub the
+// markers are invisible and the headings render as ordinary subheadings.
+function transformTabs(text) {
+  let transformed = false;
+  const replaced = text.replace(
+    /<!-- tabs -->\n([\s\S]*?)\n<!-- \/tabs -->/g,
+    (_match, body) => {
+      const sections = body.split(/^### (.+)$/m);
+      // Discard any prose before the first ### header.
+      if (sections.length < 3) return _match;
+      const items = [];
+      for (let i = 1; i < sections.length; i += 2) {
+        const label = sections[i].trim().replace(/"/g, "&quot;");
+        const content = sections[i + 1].trim();
+        items.push(`<TabItem label="${label}">\n\n${content}\n\n</TabItem>`);
+      }
+      transformed = true;
+      return `<Tabs>\n${items.join("\n")}\n</Tabs>`;
+    },
+  );
+  return { text: replaced, transformed };
+}
+
+// Replace `<!-- card-grid -->` followed by a list of `- **Week N — Title.** body…`
+// items with a <CardGrid> of <LinkCard>s linking to /weeks/week-NN. The marker
+// is invisible on GitHub; the bullet list still renders there as plain prose.
+function transformCardGrids(text) {
+  let transformed = false;
+  const replaced = text.replace(
+    /<!-- card-grid -->\n((?:- \*\*[^\n]+\n(?:  [^\n]*\n)*)+)/g,
+    (_match, listBody) => {
+      const items = [];
+      // Split list into top-level items: each starts with `- `.
+      const itemBlocks = listBody.split(/\n(?=- )/);
+      for (const block of itemBlocks) {
+        const m = block.match(/^- \*\*Week (\d+)\s*—\s*([^*]+?)\.\*\*\s*([\s\S]*)$/);
+        if (!m) continue;
+        const weekNum = m[1];
+        const titleTail = m[2].trim();
+        const body = m[3].replace(/\s+/g, " ").trim();
+        const description = body.split(/(?<=\.)\s/)[0]; // first sentence
+        const padded = String(weekNum).padStart(2, "0");
+        const safeDesc = description.replace(/"/g, "&quot;");
+        items.push(
+          `  <LinkCard title="Week ${weekNum} — ${titleTail}" description="${safeDesc}" href="/weeks/week-${padded}" />`,
+        );
+      }
+      if (items.length === 0) return _match;
+      transformed = true;
+      return `<CardGrid>\n${items.join("\n")}\n</CardGrid>\n`;
+    },
+  );
+  return { text: replaced, transformed };
+}
+
 // MDX interprets `<` as the start of a JSX tag, so markdown autolinks
 // (`<https://...>`) break parsing. Convert them to `[url](url)` form.
 function escapeAutolinksForMdx(text) {
   return text.replace(/<(https?:\/\/[^>\s]+)>/g, "[$1]($1)");
+}
+
+// GitHub resolves `[text](path/to/file.md)` against the source file's path.
+// Starlight wants an absolute route. Resolve internal `.md` link targets to
+// absolute site routes based on the destination file's route directory so
+// the same source link works in both renderers. Skip http(s)://, anchors,
+// and absolute paths.
+function resolveMdLinks(text, dstRouteDir) {
+  return text.replace(
+    /\]\(((?!https?:\/\/|#|\/)[^)]+?)\.md(#[^)]*)?\)/g,
+    (_match, relPath, anchor = "") => {
+      const abs = posix.resolve(dstRouteDir, relPath);
+      return `](${abs}/${anchor})`;
+    },
+  );
 }
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -91,6 +181,15 @@ const files = [
   ["weeks/week-01.md",                                       "weeks/week-01.md"],
   ["weeks/week-02.md",                                       "weeks/week-02.md"],
   ["weeks/week-03.md",                                       "weeks/week-03.md"],
+  ["weeks/week-04.md",                                       "weeks/week-04.md"],
+  ["weeks/week-05.md",                                       "weeks/week-05.md"],
+  ["weeks/week-06.md",                                       "weeks/week-06.md"],
+  ["weeks/week-07.md",                                       "weeks/week-07.md"],
+  ["weeks/week-08.md",                                       "weeks/week-08.md"],
+  ["weeks/week-09.md",                                       "weeks/week-09.md"],
+  ["weeks/week-10.md",                                       "weeks/week-10.md"],
+  ["weeks/week-11.md",                                       "weeks/week-11.md"],
+  ["weeks/week-12.md",                                       "weeks/week-12.md"],
   ["templates/memo.md",                                      "templates/memo.md"],
   ["templates/adr.md",                                       "templates/adr.md"],
   ["templates/progress-entry.md",                            "templates/progress-entry.md"],
@@ -114,10 +213,33 @@ for (const [src, dst] of files) {
   const srcAbs = resolve(repoRoot, src);
   let dstAbs = resolve(contentDir, dst);
   await mkdir(dirname(dstAbs), { recursive: true });
-  let text = stripBodyH1(await readFile(srcAbs, "utf8"));
-  const { text: transformedText, transformed } = transformTrees(text);
-  if (transformed) {
-    text = injectFileTreeImport(escapeAutolinksForMdx(transformedText));
+  // Route dir mirrors the dst path (relative to contentDir), minus filename.
+  // e.g. dst "templates/memo.md" → route dir "/templates".
+  const routeDir = "/" + posix.dirname(dst);
+  let text = resolveMdLinks(
+    stripBodyH1(await readFile(srcAbs, "utf8")),
+    routeDir,
+  );
+
+  const imports = [];
+  const treeResult = transformTrees(text);
+  text = treeResult.text;
+  if (treeResult.transformed) imports.push("FileTree");
+
+  const cardResult = transformCardGrids(text);
+  text = cardResult.text;
+  if (cardResult.transformed) imports.push("CardGrid", "LinkCard");
+
+  const stepsResult = transformSteps(text);
+  text = stepsResult.text;
+  if (stepsResult.transformed) imports.push("Steps");
+
+  const tabsResult = transformTabs(text);
+  text = tabsResult.text;
+  if (tabsResult.transformed) imports.push("Tabs", "TabItem");
+
+  if (imports.length > 0) {
+    text = injectComponentImports(escapeAutolinksForMdx(text), imports);
     dstAbs = dstAbs.replace(/\.md$/, ".mdx");
   }
   await writeFile(dstAbs, text);

@@ -1,8 +1,131 @@
-/* Allow inline code inside table cells to wrap rather than forcing
-   the column to overflow. Pre-wrap preserves spaces; break-word
-   breaks long tokens (e.g. model IDs) at any character boundary. */
+/* Signal AI brand theming for Starlight + Six.StarlightTheme.
+   Palette and typography per the signal-ai-brand skill. Maps brand
+   tokens onto the Starlight CSS variable surface so every built-in
+   and Six component picks up the brand without per-component overrides. */
+
+@import '@fontsource/poppins/300.css';
+@import '@fontsource/poppins/400.css';
+@import '@fontsource/poppins/500.css';
+@import '@fontsource/poppins/600.css';
+@import '@fontsource/poppins/700.css';
+@import '@fontsource/poppins/800.css';
+
+:root {
+  --signal-soft-white: #FDFCFA;
+  --signal-fog: #F5F4EE;
+  --signal-warm-black: #2F2F2F;
+  --signal-neptune: #6446FF;
+  --signal-digital: #AF46B4;
+  --signal-red: #FF585D;
+  --signal-orange: #FF965A;
+  --signal-sunshine: #FFC864;
+  --signal-seaform: #82DCBE;
+  --signal-coral: #FFA0A0;
+  --signal-dark-surface: #26292C;
+  --signal-gradient: linear-gradient(135deg, #FF585D, #AF46B4, #6446FF);
+
+  --sl-font: 'Poppins', system-ui, -apple-system, sans-serif;
+}
+
+/* Light theme — Soft White / Fog / Warm Black, Neptune accent. */
+:root[data-theme='light'] {
+  --sl-color-accent-low: #E8E3FF;
+  --sl-color-accent: var(--signal-neptune);
+  --sl-color-accent-high: #4A2FCC;
+
+  --sl-color-white: var(--signal-warm-black);
+  --sl-color-gray-1: #3A3A3A;
+  --sl-color-gray-2: #555555;
+  --sl-color-gray-3: #777777;
+  --sl-color-gray-4: #A0A0A0;
+  --sl-color-gray-5: #D8D6CF;
+  --sl-color-gray-6: var(--signal-fog);
+  --sl-color-gray-7: #ECEBE5;
+  --sl-color-black: var(--signal-soft-white);
+
+  --sl-color-bg: var(--signal-soft-white);
+  --sl-color-bg-nav: var(--signal-fog);
+  --sl-color-bg-sidebar: var(--signal-fog);
+  --sl-color-bg-inline-code: #ECEBE5;
+
+  --sl-color-text: var(--signal-warm-black);
+  --sl-color-text-accent: var(--signal-neptune);
+  --sl-color-text-invert: var(--signal-soft-white);
+
+  --sl-color-hairline: #E2DFD6;
+  --sl-color-hairline-light: #ECEBE5;
+  --sl-color-hairline-shade: #D8D6CF;
+
+  --sl-color-red: var(--signal-red);
+  --sl-color-orange: var(--signal-orange);
+  --sl-color-yellow: var(--signal-sunshine);
+  --sl-color-green: var(--signal-seaform);
+  --sl-color-blue: var(--signal-neptune);
+  --sl-color-purple: var(--signal-digital);
+}
+
+/* Dark theme — Dark Surface (never pure black), Seaform accent for CTAs. */
+:root[data-theme='dark'] {
+  --sl-color-accent-low: #2A2350;
+  --sl-color-accent: var(--signal-neptune);
+  --sl-color-accent-high: #B5A8FF;
+
+  --sl-color-white: var(--signal-soft-white);
+  --sl-color-gray-1: #E8E6DF;
+  --sl-color-gray-2: #C9C6BD;
+  --sl-color-gray-3: #9A968C;
+  --sl-color-gray-4: #6E6B64;
+  --sl-color-gray-5: #3F4145;
+  --sl-color-gray-6: #2F3236;
+  --sl-color-gray-7: #2A2D31;
+  --sl-color-black: var(--signal-dark-surface);
+
+  --sl-color-bg: var(--signal-dark-surface);
+  --sl-color-bg-nav: #1F2225;
+  --sl-color-bg-sidebar: #1F2225;
+  --sl-color-bg-inline-code: #36393D;
+
+  --sl-color-text: #E8E6DF;
+  --sl-color-text-accent: #B5A8FF;
+  --sl-color-text-invert: var(--signal-dark-surface);
+
+  --sl-color-hairline: #3F4145;
+  --sl-color-hairline-light: #36393D;
+  --sl-color-hairline-shade: #4A4D51;
+
+  --sl-color-red: var(--signal-red);
+  --sl-color-orange: var(--signal-orange);
+  --sl-color-yellow: var(--signal-sunshine);
+  --sl-color-green: var(--signal-seaform);
+  --sl-color-blue: #8A75FF;
+  --sl-color-purple: #C97ACE;
+}
+
+/* Inline code in tables wraps instead of forcing column overflow.
+   Pre-wrap preserves spaces; break-word breaks long tokens (model IDs). */
 td :not(pre) > code,
 th :not(pre) > code {
   white-space: pre-wrap;
   word-break: break-word;
 }
+
+/* Subhead utility — Signal Red label above a section heading.
+   Use as a small <p class="subhead"> inline in markdown where the
+   page benefits from a label/eyebrow above an h2. */
+.subhead {
+  color: var(--signal-red);
+  font-weight: 600;
+  font-size: 0.8125rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 0.25rem;
+}
+
+/* Headings get Poppins display weights per brand spec. */
+:where(h1, h2, h3, h4, h5, h6) {
+  font-family: var(--sl-font);
+  letter-spacing: -0.01em;
+}
+:where(h1) { font-weight: 700; }
+:where(h2) { font-weight: 600; }
+:where(h3) { font-weight: 600; }

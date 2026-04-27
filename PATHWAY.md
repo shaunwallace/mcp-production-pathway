@@ -40,58 +40,73 @@ Five artefacts grow deliberately across the pathway, plus a consumer README and 
 
 | Artefact | W4 | W5 |
 |---|---|---|
-| **Server** | HTTP transport | +sessions, +persistence, +sampling, +elicitation |
-| **Harness** | +HTTP client | +resume, +sampling responder |
-| **Eval set** | +HTTP regression | +session cases |
-| **docker-compose** | — | server + Postgres |
-| **Error taxonomy** | +transport errors | +session errors |
-| **Consumer README** | +HTTP endpoint | — |
+| **Server** | HTTP + hardening (Origin/Host, body limits, timeouts, idempotency keys) | +Postgres-backed sessions, +event log persistence, +progress/cancellation, +prompts, +roots |
+| **Harness** | +HTTP client, +`Idempotency-Key` per write | +resume from Postgres, +prompts/list+get, +roots advertise, +cancel-on-Ctrl-C |
+| **Eval set** | +HTTP regression, +transport-edge cases | +session resumption, +prompts, +completion, +roots, +cancellation |
+| **docker-compose** | — | server + Postgres + migrate one-shot |
+| **Error taxonomy** | unchanged (6 codes; transport folds into `backend_failure` with `details.cause`) | unchanged (roots → `forbidden`, cancel → `backend_failure`, both via `details.cause`) |
+| **Consumer README** | +HTTP endpoint, +session lifecycle | +prompts, +roots |
+| **THREATS.md** | new: Origin/Host, body-size, idempotency | +path traversal (roots), +session fixation |
 
 ### Phase 3 — Identity (W6-7)
 
-| Artefact | W6-7 |
-|---|---|
-| **Server** | +OAuth, +tenancy, +audit |
-| **Harness** | +OAuth (PKCE) client |
-| **Eval set** | +auth cases |
-| **docker-compose** | +local issuer |
-| **CI workflow** | +auth setup |
-| **Error taxonomy** | +auth errors, +rate-limit |
-| **Consumer README** | +auth section |
+| Artefact | W6 | W7 |
+|---|---|---|
+| **Server** | +RS role: PRM (RFC 9728), JWT validation w/ `aud` (RFC 8707), `WWW-Authenticate` discovery, scope enforcement, API-key fallback, audit log (plain JSONL) | +tenant resolution from JWT, +app-layer + RLS scoping, +per-tenant quota (token bucket), +hash-chained audit log |
+| **Harness** | static token from `MCP_TOKEN` (server validation is the W6 focus) | +DCR (RFC 7591), +full PKCE flow, +`resource=` on authorize/token/refresh, +401-driven re-auth |
+| **Local issuer** | new: discovery (RFC 8414), authorize w/ PKCE, token w/ `aud`, refresh-rotation w/ reuse detection (revokes family), revoke (RFC 7009), introspect (RFC 7662) | +`/register` (RFC 7591), tenant claim in issued tokens |
+| **Eval set** | rerun phase-1 under auth, +missing-token, +expired, +wrong-audience, +insufficient-scope | +three-tenant duplicated phase-1 (isolation), +`tenancy.cross_tenant_leak`, +`quota.exceeded.gracefully`, +`dcr.first_connect` |
+| **docker-compose** | +local-issuer service | +`audit-verify` cron service |
+| **Error taxonomy** | unchanged (6 codes; auth folds into existing codes via `details.cause`) | unchanged (`rate_limited` carries `details.retry_after_ms`) |
+| **Consumer README** | +Authentication section (PRM URL, scopes, API-key issuance) | +DCR subsection, +`Retry-After` semantics |
+| **THREATS.md** | +token replay across servers, +JWT alg confusion, +stolen refresh token, +API-key leakage | +cross-tenant leak, +tenant impersonation, +quota bypass burst, +audit mutation (w/ tamper-evident-vs-tamper-proof gap), +rogue DCR |
+| **Memos** | — | `02-identity-and-tenancy.md` (~800 words) |
 
 ### Phase 4 — Deploy (W8-9)
 
 | Artefact | W8 | W9 |
 |---|---|---|
-| **Server** | +container, +probes, +graceful shutdown | — |
-| **Harness** | — | +trace assertions |
-| **docker-compose** | +containerised server | +Jaeger, +Prometheus |
-| **CI workflow** | +image build + audit | — |
-| **RUNBOOK.md** | created: SLO breach, rollback | +trace-debug recipes |
-| **Consumer README** | +deployed URL | — |
+| **Server** | +multi-stage container (digest-pinned, non-root), +`/health` + `/ready`, +SIGTERM drain, +deadline propagation (AsyncLocalStorage + AbortController), +retry budget w/ jittered backoff, +circuit breakers, +per-backend bulkheads, +unified idempotency store (transport + write tools), +response-size truncation, +pagination contract on `list_*` | +OTel SDK bootstrap, +`instrument()` rewritten to spans+metrics, +`prom-client` `/metrics`, +`mcp_tool_cost_usd` histogram (vehicle for W10), +pino `trace_id`/`span_id` mixin, +`redactForSpan` PII guard |
+| **Harness** | +`X-Request-Deadline-Ms`, +honour `Retry-After` from `rate_limited`, +cursor-paginated `list_*` calls | +`traceparent` extraction, +Jaeger URL on eval failures, +client-side parent span |
+| **Eval set** | unchanged | +`tracing.span_attrs_present`, +`tracing.no_pii_in_attrs` |
+| **docker-compose** | +built image (pinned Postgres major), +file-mount secrets | +Jaeger, +Prometheus, +Grafana (provisioned dashboards), +Alertmanager (rule files) |
+| **CI workflow** | +image build, +`npm audit` (moderate), +Trivy scan (HIGH/CRITICAL gate), +GHCR push w/ SHA + date tags | +`scripts/check-log-schema.mjs`, +`amtool check-config` |
+| **Error taxonomy** | unchanged (6 codes; deadline → `backend_failure` w/ `details.cause: "deadline_exceeded"`, circuit-open → `backend_failure`, retry-budget → `rate_limited`, truncation → `structuredContent.truncated`) | unchanged (`mcp.error.code` added as span attribute) |
+| **Observability artefacts** | — | new: `server/src/log-schema.json`, `observability/grafana/dashboards/mcp-overview.json`, `observability/alertmanager/rules.yml` |
+| **RUNBOOK.md** | created: SLOs (with explicit numbers), SLO-breach playbook, rollback, secret-rotation, first-30-minutes checklist | +trace-debug recipes (alert → runbook → Grafana → Jaeger chain) |
+| **Consumer README** | +`docker run` one-liner / deployed URL, +pagination contract, +truncation signal | — |
+| **THREATS.md** | +resource exhaustion (slow-loris via long deadlines), +retry amplification | +PII via span attributes (looser auth than logs) |
 
 ### Phase 5 — Scale (W10-11)
 
 | Artefact | W10 | W11 |
 |---|---|---|
-| **Server** | +caching, +versioning | — |
-| **Harness** | +cost capture | +concurrent mode |
-| **Eval set** | +cost budgets | +latency budgets |
-| **docker-compose** | +Grafana (optional) | +k6 one-shot |
-| **CI workflow** | +cost report | +scheduled load |
-| **RUNBOOK.md** | +cost anomaly | +load-incident playbook |
+| **Server** | +tool-result cache (annotation-gated, tenant + version in key, fail-open), +`tool.version` strings, +cost-attribution helper writing `mcp_tool_cost_usd` + span event, +worked `search_issues` → `search_issues_v2` rename | — |
+| **Harness** | +Anthropic prompt caching (2 breakpoints: system, tools-end), +per-case cost from `usage`, +CSV cost report artefact, +cost delta vs baseline | +concurrent mode, +sampling responder, +elicitation responder |
+| **Eval set** | +`max_cost_usd` + `max_latency_ms` budgets on canonical cases, +`cache.no_cross_tenant` case | +sampling/elicitation cases under load, +latency budgets at p95 under 50 concurrent |
+| **Contract tests** | new: golden files at `test/golden/tools/<name>@<version>.json`; CI fails on schema drift | unchanged |
+| **docker-compose** | +optional Redis (commented; ADR-gated) | +k6 one-shot, +k6 Prometheus remote-write |
+| **CI workflow** | +cost report artefact, +PR-comment cost diff, +contract-test job | +scheduled nightly load test |
+| **Error taxonomy** | unchanged (6 codes; cache outage → `backend_failure` w/ `details.cause: "cache_unavailable"`, fail-open is the default path) | unchanged |
+| **RUNBOOK.md** | +cost-anomaly playbook (cost spike → tenant → tool → cache-miss check → version-bump check) | +load-incident playbook, +sampling-cost-incident playbook |
+| **THREATS.md** | +cross-tenant cache leak (mitigated by tenant in key + RLS defence in depth) | +sampling abuse (confused-deputy variant) |
+| **Tool-versioning policy** | new: additive-only same name + version bump; breaking → new tool name; deprecation window | unchanged |
 
 ### Phase 6 — Security (W12)
 
 | Artefact | W12 |
 |---|---|
-| **Server** | +input hardening, +PII policy |
-| **Harness** | +injection eval |
-| **Eval set** | +injection cases |
-| **CI workflow** | +security scan |
-| **Error taxonomy** | +injection-attempt flags |
-| **RUNBOOK.md** | +security incident |
-| **Consumer README** | +SLA language |
+| **Server** | +tool registry allow-list (control-char guard), +`wrapUntrusted` envelope on free-text outputs, +`scanForInjection` + audit event, +`safeSampling` (system-prompt allow-list + per-tenant sampling budget), +`validateResourceUri` allow-list, +`zodToJsonSchema` audited across every tool |
+| **Harness** | +`--adversarial` mode w/ success-criteria scoring, +hostile-tenant simulation (crafted bearer / forged headers) |
+| **Eval set** | +`evals/phase-6-injection.jsonl` (12+ cases): tool-output injection, second-order injection, tenancy attempts, sampling abuse, schema confusion, resource-link spoofing |
+| **CI workflow** | +weekly `security.yml` (osv-scanner + CycloneDX SBOM artefact), +adversarial eval suite as gating PR check |
+| **Error taxonomy** | unchanged (6 codes; new `details.cause` values: `sampling_prompt_not_allowed`, `sampling_budget_exhausted`, `resource_uri_scheme_not_allowed`, `cross_tenant`; `injection_suspected` is audit-only, never user-visible) |
+| **STRIDE table** | new: `decisions/threat-model.md` w/ 10 components × STRIDE matrix; every High row mapped to a commit + eval case |
+| **THREATS.md** | superseded by STRIDE table; becomes a one-page index pointing into it |
+| **Data-retention policy** | new: `decisions/data-retention.md` (data classes × location × retention × redaction; access matrix; right-to-be-forgotten flow w/ named gaps) |
+| **RUNBOOK.md** | +security-incident playbook (suspected tenancy breach / leaked credential / active injection campaign / supply-chain CVE) |
+| **Consumer README** | +SLA section, +`SECURITY.md` link (real contact, coordinated-disclosure policy) |
+| **Memos** | `03-security-posture.md` (~800 words; what I got right/wrong, posture today, what I'd do differently — third and final) |
 
 By W12, `docker compose up` brings up your full production-shaped stack locally. That's not a bonus — it's the W12 checkpoint.
 
@@ -127,11 +142,11 @@ Week 2 instrument() wrapper
 
 Week 2 harness
   ├─ eval mode added in Week 3
-  ├─ HTTP transport added in Week 4
-  ├─ reconnect + sampling responder in Week 5
+  ├─ HTTP transport + idempotency keys added in Week 4
+  ├─ reconnect + prompts + roots + cancellation in Week 5
   ├─ OAuth (PKCE) client added in Week 7
   ├─ cost capture in Week 10
-  ├─ concurrency and load in Week 11
+  ├─ concurrency, sampling responder, elicitation responder in Week 11
   └─ adversarial prompts in Week 12
 
 Week 2 test suite (vitest + MSW)
