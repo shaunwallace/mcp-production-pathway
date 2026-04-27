@@ -81,12 +81,16 @@ Five artefacts grow deliberately across the pathway, plus a consumer README and 
 
 | Artefact | W10 | W11 |
 |---|---|---|
-| **Server** | +caching, +versioning | — |
-| **Harness** | +cost capture | +concurrent mode |
-| **Eval set** | +cost budgets | +latency budgets |
-| **docker-compose** | +Grafana (optional) | +k6 one-shot |
-| **CI workflow** | +cost report | +scheduled load |
-| **RUNBOOK.md** | +cost anomaly | +load-incident playbook |
+| **Server** | +tool-result cache (annotation-gated, tenant + version in key, fail-open), +`tool.version` strings, +cost-attribution helper writing `mcp_tool_cost_usd` + span event, +worked `search_issues` → `search_issues_v2` rename | — |
+| **Harness** | +Anthropic prompt caching (2 breakpoints: system, tools-end), +per-case cost from `usage`, +CSV cost report artefact, +cost delta vs baseline | +concurrent mode, +sampling responder, +elicitation responder |
+| **Eval set** | +`max_cost_usd` + `max_latency_ms` budgets on canonical cases, +`cache.no_cross_tenant` case | +sampling/elicitation cases under load, +latency budgets at p95 under 50 concurrent |
+| **Contract tests** | new: golden files at `test/golden/tools/<name>@<version>.json`; CI fails on schema drift | unchanged |
+| **docker-compose** | +optional Redis (commented; ADR-gated) | +k6 one-shot, +k6 Prometheus remote-write |
+| **CI workflow** | +cost report artefact, +PR-comment cost diff, +contract-test job | +scheduled nightly load test |
+| **Error taxonomy** | unchanged (6 codes; cache outage → `backend_failure` w/ `details.cause: "cache_unavailable"`, fail-open is the default path) | unchanged |
+| **RUNBOOK.md** | +cost-anomaly playbook (cost spike → tenant → tool → cache-miss check → version-bump check) | +load-incident playbook, +sampling-cost-incident playbook |
+| **THREATS.md** | +cross-tenant cache leak (mitigated by tenant in key + RLS defence in depth) | +sampling abuse (confused-deputy variant) |
+| **Tool-versioning policy** | new: additive-only same name + version bump; breaking → new tool name; deprecation window | unchanged |
 
 ### Phase 6 — Security (W12)
 
