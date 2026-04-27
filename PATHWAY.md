@@ -96,13 +96,17 @@ Five artefacts grow deliberately across the pathway, plus a consumer README and 
 
 | Artefact | W12 |
 |---|---|
-| **Server** | +input hardening, +PII policy |
-| **Harness** | +injection eval |
-| **Eval set** | +injection cases |
-| **CI workflow** | +security scan |
-| **Error taxonomy** | +injection-attempt flags |
-| **RUNBOOK.md** | +security incident |
-| **Consumer README** | +SLA language |
+| **Server** | +tool registry allow-list (control-char guard), +`wrapUntrusted` envelope on free-text outputs, +`scanForInjection` + audit event, +`safeSampling` (system-prompt allow-list + per-tenant sampling budget), +`validateResourceUri` allow-list, +`zodToJsonSchema` audited across every tool |
+| **Harness** | +`--adversarial` mode w/ success-criteria scoring, +hostile-tenant simulation (crafted bearer / forged headers) |
+| **Eval set** | +`evals/phase-6-injection.jsonl` (12+ cases): tool-output injection, second-order injection, tenancy attempts, sampling abuse, schema confusion, resource-link spoofing |
+| **CI workflow** | +weekly `security.yml` (osv-scanner + CycloneDX SBOM artefact), +adversarial eval suite as gating PR check |
+| **Error taxonomy** | unchanged (6 codes; new `details.cause` values: `sampling_prompt_not_allowed`, `sampling_budget_exhausted`, `resource_uri_scheme_not_allowed`, `cross_tenant`; `injection_suspected` is audit-only, never user-visible) |
+| **STRIDE table** | new: `decisions/threat-model.md` w/ 10 components × STRIDE matrix; every High row mapped to a commit + eval case |
+| **THREATS.md** | superseded by STRIDE table; becomes a one-page index pointing into it |
+| **Data-retention policy** | new: `decisions/data-retention.md` (data classes × location × retention × redaction; access matrix; right-to-be-forgotten flow w/ named gaps) |
+| **RUNBOOK.md** | +security-incident playbook (suspected tenancy breach / leaked credential / active injection campaign / supply-chain CVE) |
+| **Consumer README** | +SLA section, +`SECURITY.md` link (real contact, coordinated-disclosure policy) |
+| **Memos** | `03-security-posture.md` (~800 words; what I got right/wrong, posture today, what I'd do differently — third and final) |
 
 By W12, `docker compose up` brings up your full production-shaped stack locally. That's not a bonus — it's the W12 checkpoint.
 
