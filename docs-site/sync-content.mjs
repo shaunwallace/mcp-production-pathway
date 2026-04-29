@@ -203,6 +203,12 @@ const files = [
   ["docs/model-ids.md",                                      "docs/model-ids.md"],
   ["server/README.md",                                       "server/readme.md"],
   ["harness/README.md",                                      "harness/readme.md"],
+  ["fast-track/README.md",                                   "fast-track/index.md"],
+  ["fast-track/01-why-mcp-exists.md",                        "fast-track/01-why-mcp-exists.md"],
+  ["fast-track/02-mental-model.md",                          "fast-track/02-mental-model.md"],
+  ["fast-track/03-architecture-in-depth.md",                 "fast-track/03-architecture-in-depth.md"],
+  ["fast-track/04-risk-surface.md",                          "fast-track/04-risk-surface.md"],
+  ["fast-track/05-making-it-reliable.md",                    "fast-track/05-making-it-reliable.md"],
 ];
 
 if (existsSync(contentDir)) {
