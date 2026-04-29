@@ -26,6 +26,7 @@ export default defineConfig({
 				starlightThemeSix({
 					navLinks: [
 						{ label: "Start here", link: "/" },
+						{ label: "Leader fast track", link: "/fast-track" },
 						{ label: "Curriculum", link: "/weeks/week-00-setup" },
 						{ label: "Examples", link: "/templates/examples" },
 					],
@@ -39,6 +40,17 @@ export default defineConfig({
 				  { label: "Overview", link: "/" },
 				  { label: "Pathway map", slug: "pathway" },
 				  { label: "Repo architecture", slug: "repo-architecture" },
+				],
+			  },
+			  {
+				label: "Leader fast track",
+				items: [
+				  { label: "Overview", slug: "fast-track" },
+				  { label: "1 — What MCP is, and what it changes", slug: "fast-track/01-why-mcp-exists" },
+				  { label: "2 — The mental model", slug: "fast-track/02-mental-model" },
+				  { label: "3 — Architecture in depth", slug: "fast-track/03-architecture-in-depth" },
+				  { label: "4 — The risk surface", slug: "fast-track/04-risk-surface" },
+				  { label: "5 — Making it reliable", slug: "fast-track/05-making-it-reliable" },
 				],
 			  },
 			  {
