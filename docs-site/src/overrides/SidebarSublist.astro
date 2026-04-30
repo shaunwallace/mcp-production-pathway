@@ -1,0 +1,206 @@
+---
+import type { StarlightRouteData } from '@astrojs/starlight/route-data'
+
+interface Props {
+  sublist: StarlightRouteData['sidebar']
+  nested?: boolean
+}
+
+const { sublist, nested } = Astro.props
+
+type SidebarEntry = StarlightRouteData['sidebar'][number]
+function containsCurrent(entry: SidebarEntry): boolean {
+  if (entry.type === 'link') return Boolean(entry.isCurrent)
+  return entry.entries.some(containsCurrent)
+}
+---
+
+{
+  sublist.map((entry) =>
+    entry.type === 'link' ? (
+      <a
+        href={entry.href}
+        aria-current={entry.isCurrent && 'page'}
+        title={entry.label}
+        class:list={['entry-link', entry.attrs.class]}
+        {...entry.attrs}
+      >
+        <span class="entry-link-label">{entry.label}</span>
+        {entry.badge && <span class="entry-badge">{entry.badge.text}</span>}
+      </a>
+    ) : (
+      <div
+        class:list={[
+          'container-sidebar-entry',
+          containsCurrent(entry) ? 'is-expanded' : 'collapsed',
+        ]}
+        data-contains-current={containsCurrent(entry) ? 'true' : 'false'}
+      >
+        <button class="entry-title-button" data-group-toggle type="button">
+          <h4 class="entry-title" title={entry.label}>{entry.label}</h4>
+          <svg
+            class="collapse-icon"
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="m6 9 6 6 6-6" />
+          </svg>
+        </button>
+        <div class="container-group-link" data-group-content>
+          <Astro.self sublist={entry.entries} nested />
+        </div>
+      </div>
+    ),
+  )
+}
+
+<style>
+  .container-sidebar-entry {
+    flex-direction: column;
+    display: flex;
+  }
+
+  .container-sidebar-entry.is-expanded {
+    margin-bottom: 1rem;
+  }
+
+  .entry-title-button {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    background: none;
+    border: none;
+    padding: 0.5rem 0;
+    cursor: pointer;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    gap: 0.5rem;
+  }
+
+  .entry-title-button:hover {
+    color: var(--accent-foreground);
+  }
+
+  .entry-title {
+    margin: 0;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0;
+    flex: 1;
+  }
+
+  .collapse-icon {
+    width: 1rem;
+    height: 1rem;
+    transition: transform 0.2s ease-in-out;
+    flex-shrink: 0;
+  }
+
+  .container-sidebar-entry.collapsed .collapse-icon {
+    transform: rotate(-90deg);
+  }
+
+  /* `overflow: hidden !important` is needed because the theme's base.css
+     applies `overflow: inherit !important` to `.container-group-link`,
+     which would otherwise let collapsed-group content stay visible and
+     clickable, overlapping the next group's header. */
+  .container-group-link {
+    overflow: hidden !important;
+    max-height: 1000px;
+    opacity: 1;
+    transition: max-height 0.2s ease-in-out, opacity 0.2s ease-in-out;
+  }
+
+  .container-sidebar-entry.collapsed .container-group-link {
+    max-height: 0;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  /* Sidebar links: smaller font, single-line with ellipsis. The native
+     `title` attribute on each anchor surfaces the full label on hover. */
+  :global(.entry-link) {
+    font-size: 0.8125rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-width: 0;
+  }
+
+  :global(.entry-link .entry-link-label) {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0;
+    flex: 1;
+  }
+</style>
+
+<script>
+  // Delegated handler — survives Astro view-transition swaps because it's
+  // attached to document once. The previous theme bound listeners on
+  // DOMContentLoaded, which doesn't refire after client-side navigation,
+  // so post-nav clicks on the group header silently did nothing.
+  const STORAGE_PREFIX = 'sidebar-'
+
+  function applyStoredState() {
+    document
+      .querySelectorAll<HTMLElement>('.container-sidebar-entry')
+      .forEach((entry) => {
+        const title = entry
+          .querySelector<HTMLElement>('.entry-title')
+          ?.textContent?.trim()
+        if (!title) return
+        const stored = localStorage.getItem(STORAGE_PREFIX + title)
+        if (stored === null) {
+          // No stored preference — default to collapsed unless this group
+          // contains the current page (server-rendered hint).
+          return
+        }
+        const collapsed = stored === 'true'
+        entry.classList.toggle('collapsed', collapsed)
+        entry.classList.toggle('is-expanded', !collapsed)
+      })
+  }
+
+  function init() {
+    if (!(document as any).__sidebarToggleBound) {
+      document.addEventListener('click', (event) => {
+        const target = event.target as HTMLElement | null
+        const button = target?.closest<HTMLElement>('[data-group-toggle]')
+        if (!button) return
+        const entry = button.closest<HTMLElement>('.container-sidebar-entry')
+        if (!entry) return
+        entry.classList.toggle('collapsed')
+        entry.classList.toggle('is-expanded')
+        const title = button
+          .querySelector<HTMLElement>('.entry-title')
+          ?.textContent?.trim()
+        if (title) {
+          localStorage.setItem(
+            STORAGE_PREFIX + title,
+            entry.classList.contains('collapsed').toString(),
+          )
+        }
+      })
+      ;(document as any).__sidebarToggleBound = true
+    }
+    applyStoredState()
+  }
+
+  init()
+  document.addEventListener('astro:page-load', init)
+</script>
