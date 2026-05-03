@@ -520,6 +520,42 @@ The memo is the artefact a future-you (or a future hire) reads to understand *wh
 - **Change:** duplicate phase-1 cases under three tenants (`alpha`, `beta`, `gamma`); the three runs must produce identical pass rates against isolated data. Add `tenancy.cross_tenant_leak.attempted` (deliberate cross-tenant query attempt; expect `forbidden`). Add `quota.exceeded.gracefully` (load-spike one tenant; assert peers see no degradation). Add `dcr.first_connect` (clean-state harness re-registers and runs).
 - **After:** eval set has three tenancy-class cases beyond the duplicated phase-1 set.
 
+The fan-out is a small harness change — multiply, don't rewrite:
+
+```typescript
+// harness/src/eval/fanout.ts
+import { runEvalCase, type EvalCase } from "./run.js";
+
+const TENANTS = ["alpha", "beta", "gamma"] as const;
+
+export async function runWithTenancyFanout(cases: EvalCase[]) {
+  const expanded = cases.flatMap((c) =>
+    TENANTS.map((tenant) => ({
+      ...c,
+      id: `${c.id}::${tenant}`,
+      tenant, // picked up by connectToServer() to seed the JWT's tenant claim
+      // Each tenant gets its own seeded data fixture; identical schema, disjoint rows.
+      fixture: `fixtures/tenancy/${tenant}/${c.fixture ?? "default.json"}`,
+    })),
+  );
+  const results = await Promise.all(expanded.map(runEvalCase));
+
+  // Pass-rate must be identical across tenants — a mismatch means data leaked or fixtures drifted.
+  const byTenant = Object.fromEntries(
+    TENANTS.map((t) => [t, results.filter((r) => r.id.endsWith(`::${t}`))]),
+  );
+  const rates = TENANTS.map((t) =>
+    byTenant[t].filter((r) => r.passed).length / byTenant[t].length,
+  );
+  if (new Set(rates).size > 1) {
+    throw new Error(`Tenancy fan-out produced divergent pass rates: ${JSON.stringify(rates)}`);
+  }
+  return results;
+}
+```
+
+The divergent-rate assertion is the actual test. If `alpha` passes 18/20 and `beta` passes 17/20, something tenant-specific is leaking — the fixtures are not as isolated as you thought, or a tool is reading from the wrong tenant's rows.
+
 ### Evolution: consumer README
 
 - **Change:** add a "Dynamic Client Registration" subsection under Authentication, with a one-curl example. Document the supported `token_endpoint_auth_method` values and the `Retry-After` semantics on quota responses.

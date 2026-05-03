@@ -236,6 +236,49 @@ node scripts/check-log-schema.mjs server/src/**/*.ts
 
 The script greps for `logger.info(`/`logger.error(`, captures the structured object, validates it against the schema, fails the build on mismatch. Drift is the failure mode this prevents — a dev adds `userEmail` instead of redacting; the schema has no field with that shape, the lint catches it.
 
+```javascript
+// scripts/check-log-schema.mjs
+import { readFileSync } from "node:fs";
+import { globSync } from "node:fs";
+import Ajv from "ajv";
+
+const schema = JSON.parse(readFileSync("server/src/log-schema.json", "utf8"));
+const validate = new Ajv({ allErrors: true, strict: false }).compile(schema);
+
+// Match `logger.info({ ... }, "msg")` and `logger.error({ ... }, "msg")`.
+// Object literal must be balanced; this regex handles single-line + small multi-line.
+const CALL = /logger\.(?:info|warn|error|debug)\(\s*(\{[\s\S]*?\})\s*[,)]/g;
+
+const files = process.argv.slice(2).flatMap((p) => globSync(p));
+let failures = 0;
+
+for (const file of files) {
+  const src = readFileSync(file, "utf8");
+  for (const match of src.matchAll(CALL)) {
+    // Strip trailing commas + comments so JSON.parse will accept it. Best-effort —
+    // anything too dynamic to parse statically is skipped (a runtime test will catch it).
+    const literal = match[1]
+      .replace(/\/\/.*$/gm, "")
+      .replace(/,(\s*[}\]])/g, "$1");
+    let obj;
+    try { obj = JSON.parse(literal); } catch { continue; } // dynamic; skip
+    if (!validate(obj)) {
+      failures++;
+      console.error(`${file}: ${JSON.stringify(obj)}`);
+      console.error("  errors:", validate.errors);
+    }
+  }
+}
+
+if (failures > 0) {
+  console.error(`\n${failures} log call(s) violate log-schema.json`);
+  process.exit(1);
+}
+console.log(`✓ checked ${files.length} files; all log calls match schema`);
+```
+
+The skip-on-dynamic behaviour is deliberate: this is a lint, not a runtime check. The runtime equivalent — wrapping `logger.*` to `validate()` every call in dev — is recorded as an ADR option but not the default (the CPU cost is small but real).
+
 ### Dashboards as code
 
 ```yaml

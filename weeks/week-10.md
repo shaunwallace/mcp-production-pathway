@@ -82,7 +82,8 @@ The pricing math, written into `cost.ts`:
 ```typescript
 // harness/src/cost.ts
 const PRICING = {
-  // Per million tokens. Sonnet 4.6 numbers as of 2026-04; check before relying.
+  // Per million tokens. Sonnet 4.6 numbers reviewed quarterly; check before relying.
+  // Source of truth: the date-stamp at the top of `harness/src/pricing.ts`.
   "claude-sonnet-4-6": {
     input:               3.00,
     output:             15.00,
@@ -236,8 +237,15 @@ describe("tool contracts are stable", () => {
         null, 2,
       );
       if (!fs.existsSync(goldenPath)) {
-        // First-write convenience; CI fails because the file isn't tracked yet.
+        // First-write convenience for local dev only — fail loudly in CI so an
+        // untracked golden never silently passes.
+        if (process.env.CI) {
+          throw new Error(
+            `Missing golden file ${goldenPath}. Run the test locally to generate it, then commit.`,
+          );
+        }
         fs.writeFileSync(goldenPath, observed);
+        throw new Error(`Wrote new golden ${goldenPath}; commit and re-run.`);
       }
       const golden = fs.readFileSync(goldenPath, "utf8");
       expect(observed).toEqual(golden);

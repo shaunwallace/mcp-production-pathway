@@ -7,12 +7,6 @@ description: A 12-week learning pathway for building a production-grade Model Co
 
 A 12-week learning pathway for building a production-grade Model Context Protocol server — protocol internals, local-first dev, containerised deployment, authentication, multi-tenancy, observability, evals, cost, security. Written for senior engineers and engineering leaders who want practitioner-level fluency with the production MCP stack.
 
-## Release status
-
-**Weeks 1-3 are live. Weeks 4-12 ship as outlines now and will be written out iteratively.** Each outline commits to the structure — objectives, canonical code example, checkpoint, artefact evolution — so the shape is stable even where the prose isn't yet. Subscribe to releases on the repo to get notified as each week lands in full.
-
-The pathway is released incrementally on purpose. Three weeks of real depth beats twelve weeks of thin coverage, and the release cadence keeps pace with learners who are actually doing the work.
-
 ## What you'll build
 
 A local-first, container-packaged, OAuth-protected, multi-tenant MCP server with tracing, metrics, evals in CI, a load test, a threat model, and a runbook. Every week can be completed end-to-end on your laptop. Cloud deployment is an optional extension, not a gate.
@@ -40,15 +34,17 @@ The right way to use it is to create your own private workbook from this templat
 
 ## The 12-week arc
 
-| Phase | Weeks | Focus | Status |
-|-------|-------|-------|--------|
-| 0 | 1 | Mental model: what MCP is, what it isn't | **Live** |
-| 1 | 2-3 | First server, tool design, evals, CI | **Live** |
-| 2 | 4-5 | HTTP transport + hardening, sessions, persistence, prompts, roots | Outline |
-| 3 | 6-7 | OAuth 2.1 (RFCs 9728/8707/7591), DCR, multi-tenancy, tamper-evident audit, quotas | Outline |
-| 4 | 8-9 | Containerised deploy, SLOs, secrets, OpenTelemetry, metrics | Outline |
-| 5 | 10-11 | Caching, cost attribution, load testing | Outline |
-| 6 | 12 | Security, threat model, PII, hostile inputs, close-out | Outline |
+| Phase | Weeks | Focus |
+|-------|-------|-------|
+| 0 | 1 | Mental model: what MCP is, what it isn't |
+| 1 | 2-3 | First server, tool design, evals, CI |
+| 2 | 4-5 | HTTP transport + hardening, sessions, persistence, prompts, roots |
+| 3 | 6-7 | OAuth 2.1 (RFCs 9728/8707/7591), DCR, multi-tenancy, tamper-evident audit, quotas |
+| 4 | 8-9 | Containerised deploy, SLOs, secrets, OpenTelemetry, metrics |
+| 5 | 10-11 | Caching, cost attribution, load testing |
+| 6 | 12 | Security, threat model, PII, hostile inputs, close-out |
+
+A 5-chapter **Leader Fast Track** distillation lives alongside the full pathway for senior engineering leaders who want the strategic shape without the build. See `fast-track/`.
 
 ### What each week covers
 

@@ -100,7 +100,7 @@ Forgetting the Connections step is the #1 reason Notion-backed servers stall in 
 node --version   # should print v22.x.x or higher
 ```
 
-If lower, install the current LTS from <https://nodejs.org/> or via `nvm`/`fnm`/`volta`. Node 20 is end-of-life as of April 2026 — don't use it.
+If lower, install the current LTS from <https://nodejs.org/> or via `nvm`/`fnm`/`volta`. Node 20 is past end-of-life — don't use it.
 
 ### Package manager
 

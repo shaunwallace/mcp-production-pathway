@@ -168,6 +168,9 @@ The defence is layered:
 // server/src/transport/origin-guard.ts
 import { MiddlewareHandler } from "hono";
 
+// Two separate allowlists: ALLOWED_HOSTS gates the Host header (DNS rebinding defence;
+// hardcoded because the bind address is fixed), opts.allow gates the Origin header
+// (cross-origin defence; configurable because each deployment knows its own clients).
 const ALLOWED_HOSTS = new Set(["127.0.0.1:8080", "localhost:8080"]);
 
 export function originGuard(opts: { allow: string[] }): MiddlewareHandler {

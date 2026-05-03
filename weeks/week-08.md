@@ -65,18 +65,29 @@ This week installs the primitives that prevent each of those. They're cheap to a
 
 ### Multi-stage Dockerfile
 
+First, capture the current digest for the Node base image — copy-paste from the next step's output:
+
+```bash
+docker pull node:22.11.0-alpine && \
+  docker inspect node:22.11.0-alpine --format='{{index .RepoDigests 0}}'
+# → node@sha256:abc123...   (use the value after `sha256:`)
+```
+
+Then the Dockerfile (replace `REPLACE_WITH_DIGEST` in two places with the value you just printed):
+
 ```dockerfile
 # syntax=docker/dockerfile:1.7
 ARG NODE_VERSION=22.11.0
+ARG NODE_DIGEST=REPLACE_WITH_DIGEST
 # Pin the base image by digest, not just tag — tag mutability is a real supply-chain risk.
-FROM node:${NODE_VERSION}-alpine@sha256:<paste-current-sha> AS builder
+FROM node:${NODE_VERSION}-alpine@sha256:${NODE_DIGEST} AS builder
 WORKDIR /app
 COPY package*.json ./
 RUN npm ci --include=dev
 COPY . .
 RUN npm run build && npm prune --omit=dev
 
-FROM node:${NODE_VERSION}-alpine@sha256:<paste-current-sha> AS runtime
+FROM node:${NODE_VERSION}-alpine@sha256:${NODE_DIGEST} AS runtime
 WORKDIR /app
 RUN addgroup -S app && adduser -S app -G app
 COPY --from=builder --chown=app:app /app/node_modules ./node_modules
@@ -92,7 +103,9 @@ ENTRYPOINT ["/sbin/tini", "--"]
 CMD ["node", "dist/index.js"]
 ```
 
-Pin by digest, not just version tag. Get the digest with `docker pull node:22.11.0-alpine && docker inspect node:22.11.0-alpine --format='{{index .RepoDigests 0}}'`. Bumping the digest is a deliberate act recorded in git, the way it should be.
+Pin by digest, not just version tag. Bumping the digest is a deliberate act recorded in git, the way it should be.
+
+> **Cost note (cloud track only):** Cloud Run's free tier covers a typical learner's W8-W12 cloud spend. Budget under $5 for the cloud-track months from W8 onward, dominated by container-registry storage. The local track is free.
 
 ### Health and readiness
 
