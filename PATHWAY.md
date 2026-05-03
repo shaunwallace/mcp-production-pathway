@@ -7,10 +7,6 @@ description: How the 12-week pathway fits together — dependencies, artefact ev
 
 One-page overview of how the 12-week pathway fits together: what each week produces, which artefacts feed which later weeks, and the quality gates that make each evolution visible. If you're tempted to skip a week, read this first — most weeks have downstream dependencies, and the gaps show up as stalls two or three phases later.
 
-## Release cadence
-
-The pathway is released iteratively. **Weeks 1-3 are live.** Weeks 4-12 ship as outlines today (stable structure, terse prose) and fill out over time. The shape is load-bearing and won't change; the depth inside each week is what grows.
-
 ## The spine
 
 ```
@@ -123,6 +119,68 @@ Enables: <one sentence forward-reference>
 ```
 
 Phase boundaries have a single `make verify` acceptance gate — full test suite, full eval suite, health check against the local compose stack. Tagging `phase-N-complete` requires verify to pass. This makes the checkpoint falsifiable, not just ceremonial.
+
+### The verify gate, phase by phase
+
+`make verify` is *one entry point, exit code is the truth*. It exists so a learner can't tag `phase-N-complete` on vibes — the command runs everything the phase claims to deliver, including everything earlier phases delivered. If a W7 change quietly breaks a W3 eval case, verify catches it at the W7 boundary, not in W10 when you're chasing a different bug.
+
+The Makefile lives in your **workbook**, not the textbook. You build it up phase by phase — only ever adding targets, never replacing — so each tag (`phase-1-complete`, `phase-2-complete`, …) is a strict superset of the last. The textbook tells you *what verify must do at each boundary*; the workbook holds the actual targets.
+
+| Tag | `make verify` runs |
+|---|---|
+| `phase-1-complete` (W3) | unit tests (vitest) · contract tests (MSW) · eval suite via harness on stdio |
+| `phase-2-complete` (W5) | the above · `docker compose up -d` + healthcheck wait · evals replayed against the HTTP transport · `compose down` |
+| `phase-3-complete` (W7) | the above · tenant-fanout eval (alpha/beta/gamma identical pass rates) · audit-chain `verify-chain` script · quota smoke test |
+| `phase-4-complete` (W9) | the above · `scripts/check-log-schema.mjs` · OTel trace-presence sanity check (one tool call, one span captured) |
+| `phase-5-complete` (W11) | the above · golden-file contract tests · cost/latency budget assertions on eval cases · short k6 smoke (60s ramp, not the full nightly load run) |
+| `phase-6-complete` (W12) | the above · adversarial eval set · `osv-scanner` (HIGH/CRITICAL gate) · CycloneDX SBOM emit |
+
+The shape of the Makefile that supports this — additive, with each phase adding one or two targets:
+
+```makefile
+# Workbook Makefile — grows phase by phase. Each tag is a superset of the last.
+
+# --- Phase 1 (W2-W3) ----------------------------------------------------------
+.PHONY: test eval verify-p1
+test:
+	cd server && npm test
+	cd harness && npm test
+eval:
+	cd harness && npm run eval -- --cases ../evals/cases.jsonl
+verify-p1: test eval
+
+# --- Phase 2 (W4-W5) — adds compose + HTTP-transport eval replay --------------
+.PHONY: compose-up compose-down eval-http verify-p2
+compose-up:
+	docker compose up -d --wait    # --wait blocks until healthchecks pass
+compose-down:
+	docker compose down -v
+eval-http: compose-up
+	cd harness && npm run eval -- --transport http --cases ../evals/cases.jsonl
+verify-p2: verify-p1 eval-http compose-down
+
+# --- Phase 3 (W6-W7) — adds tenant fan-out, audit chain, quota smoke ----------
+.PHONY: eval-tenancy verify-chain quota-smoke verify-p3
+eval-tenancy: compose-up
+	cd harness && npm run eval:fanout -- --tenants alpha,beta,gamma
+verify-chain:
+	node scripts/verify-audit-chain.mjs
+quota-smoke:
+	node scripts/quota-smoke.mjs
+verify-p3: verify-p2 eval-tenancy verify-chain quota-smoke
+
+# … phases 4-6 follow the same pattern; see weeks/week-09, week-11, week-12.
+
+# `verify` always points at the latest completed phase.
+verify: verify-p3
+```
+
+Two properties to preserve as you extend it:
+
+1. **Each phase target depends on the previous one.** `verify-p3` calls `verify-p2`, which calls `verify-p1`. You should never be able to tag `phase-3-complete` without phase-2's gates passing.
+2. **`verify` is an alias to the latest phase.** When you finish W5, the last line becomes `verify: verify-p2`. When you finish W7, `verify: verify-p3`. Bare `make verify` is what CI runs and what you run before tagging.
+
+If a target is too slow to run on every change (the W11 k6 smoke is the obvious candidate), gate it with an env flag (`SKIP_LOAD=1 make verify`) but make the *unflagged* path the one that actually verifies. The gate is only useful if its default behaviour is honest.
 
 ## Artefact dependency chain
 

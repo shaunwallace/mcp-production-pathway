@@ -8,7 +8,7 @@ A public **GitHub template repository** — the "textbook" half of a 12-week MCP
 
 Implication: edits here should preserve the template's pristine state. `weeks/` and `templates/` are read-only curriculum in a learner's workbook. `server/` and `harness/` are deliberately-empty scaffolds with `TODO(week-N)` markers — don't "helpfully" implement them unless asked. The point is that the learner does that work.
 
-The pathway is **released iteratively**. Weeks 1-3 are published; weeks 4-12 are outlined in `README.md` but not yet written. Don't scaffold unpublished weeks.
+All 12 weeks plus the Leader Fast Track (`fast-track/`) are published. The pathway is *paced* over 12 weeks for the learner — that's a property of the curriculum, not the release cadence.
 
 ## Files that orient the work
 
@@ -16,7 +16,8 @@ The pathway is **released iteratively**. Weeks 1-3 are published; weeks 4-12 are
 - `REPO-ARCHITECTURE.md` — textbook/workbook split, git conventions.
 - `PATHWAY.md` — artefact-dependency map. Which week's outputs feed which later week.
 - `weeks/week-00-setup.md` — prerequisites walkthrough (API keys, backend choice menu, Claude Desktop, Node). The Week 2 backend is an explicit choice with a criteria-based menu — GitHub is the "no strong preference" default but the pathway does not prescribe one.
-- `weeks/week-01.md` through `week-03.md` — the published curriculum.
+- `weeks/week-01.md` through `week-12.md` — the full curriculum.
+- `fast-track/` — 5-chapter Leader Fast Track distillation for senior engineering leaders.
 - `templates/memo.md`, `adr.md`, `progress-entry.md` — blank templates.
 - `templates/examples/` — worked examples (two memo variants, an ADR, an iteration log, harness traces). Reference material for a learner who is stuck and wants to see the shape of a good artefact.
 - `docs/model-ids.md` — pinned Claude model IDs. Single place to bump when models rotate.

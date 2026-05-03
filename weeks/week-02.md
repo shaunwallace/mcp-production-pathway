@@ -412,7 +412,7 @@ const trace: Array<{ tool: string; args: unknown; ms: number }> = [];
 
 for (let i = 0; i < 10; i++) {                     // hard iteration cap
   const resp = await anthropic.messages.create({
-    model: "claude-sonnet-4-6",
+    model: "claude-sonnet-4-6", // Pinned model ID — see /docs/model-ids.md for the canonical list and rotation policy.
     max_tokens: 1024,
     tools: anthropicTools,
     messages,
