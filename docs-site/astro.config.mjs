@@ -8,6 +8,9 @@ import starlightThemeSix from '@six-tech/starlight-theme-six';
 // `site` and `base` are injected by the GitHub Pages workflow
 // (.github/workflows/pages.yml) via actions/configure-pages. They're undefined
 // for local dev, which is fine — Astro defaults to localhost/'/'.
+const basePrefix = process.env.BASE ? process.env.BASE.replace(/\/$/, "") : "";
+const withBase = (path) => `${basePrefix}${path}`;
+
 export default defineConfig({
 	site: process.env.SITE,
 	base: process.env.BASE,
@@ -29,10 +32,10 @@ export default defineConfig({
 			plugins: [
 				starlightThemeSix({
 					navLinks: [
-						{ label: "Start here", link: "/" },
-						{ label: "Leader fast track", link: "/fast-track" },
-						{ label: "Curriculum", link: "/weeks/week-00-setup" },
-						{ label: "Examples", link: "/templates/examples" },
+						{ label: "Start here", link: withBase("/") },
+						{ label: "Leader fast track", link: withBase("/fast-track") },
+						{ label: "Curriculum", link: withBase("/weeks/week-00-setup") },
+						{ label: "Examples", link: withBase("/templates/examples") },
 					],
 					footerText: "Template — fork and make it your own. MIT licensed.",
 				}),
