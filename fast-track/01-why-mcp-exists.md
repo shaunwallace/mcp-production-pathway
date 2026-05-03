@@ -39,20 +39,9 @@ Today, when Marlin's deal-summariser team needs Salesforce data, they write a Sa
 
 After MCP, Marlin's data platform team can publish a Salesforce MCP server once. Every internal agent — current and future — consumes it. The integration becomes a **standalone capability** with its own owner, its own on-call, its own version lifecycle, its own SLOs.
 
-```mermaid
-flowchart LR
-  subgraph "Today: agent-coupled integration"
-    A1["Deal summariser team"] -.owns.-> SF1["SF client (theirs)"]
-    A2["Forecast bot team"] -.owns.-> SF2["SF client (theirs)"]
-    A3["Hygiene team"] -.owns.-> SF3["SF client (theirs)"]
-  end
-  subgraph "With MCP: capability-owned integration"
-    DP["Data platform team"] -.owns.-> M["Salesforce MCP server"]
-    B1["Deal summariser"] --> M
-    B2["Forecast bot"] --> M
-    B3["Hygiene assistant"] --> M
-  end
-```
+![Today: agent-coupled integration. Three feature teams — Deal summariser, Forecast bot, Hygiene — each separately own their own Salesforce client.](assets/agent-coupled-integration.png)
+
+![With MCP: capability-owned integration. The data platform team owns one Salesforce MCP server; the deal summariser, forecast bot, and hygiene assistant all consume it.](assets/mcp_capability-integration.png)
 
 This is mostly a re-org of who owns what. It is the right re-org, because integration logic ends up in the team that should have always owned it, with the disciplines (rate-limit handling, retry policy, audit logging, credential rotation) that integration teams are already good at and that feature teams systematically aren't.
 
@@ -80,21 +69,7 @@ The pre-MCP version of this work: an analyst writes SQL, exports CSVs, joins the
 
 The MCP-enabled version: the analyst asks an agent. The agent has MCP servers for the warehouse, the semantic layer, the ticketing system, the internal documentation, and the dashboarding tool. It can roam.
 
-```mermaid
-flowchart TB
-  Q["Analyst: 'Why did EMEA bookings miss in Q3?'"]
-  A["Agent loop"]
-  W["Warehouse MCP server"]
-  S["Semantic layer MCP server"]
-  D["Internal docs MCP server"]
-  T["Ticketing MCP server"]
-  Q --> A
-  A <--> W
-  A <--> S
-  A <--> D
-  A <--> T
-  A --> R["Synthesised answer + citations + filed ticket for missing dimension"]
-```
+![An analyst's question fans out through an agent loop to four MCP servers — warehouse, semantic layer, internal docs, ticketing — and returns as a synthesised answer with citations and a filed ticket for the missing dimension.](assets/agentic-exploration-loop.png)
 
 In a single session that loop can:
 

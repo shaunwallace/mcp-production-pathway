@@ -232,6 +232,12 @@ const files = [
   ["fast-track/05-making-it-reliable.md",                    "fast-track/05-making-it-reliable.md"],
 ];
 
+// Asset directories to copy verbatim alongside the markdown so relative
+// image links (e.g. `![…](assets/foo.png)`) resolve at the synced location.
+const assetDirs = [
+  ["fast-track/assets", "fast-track/assets"],
+];
+
 if (existsSync(contentDir)) {
   await rm(contentDir, { recursive: true, force: true });
 }
@@ -285,4 +291,16 @@ await writeFile(
   applyBasePrefix(notFound, process.env.BASE),
 );
 
-console.log(`Synced ${files.length} files + 404 → ${contentDir}`);
+let copiedAssetDirs = 0;
+for (const [src, dst] of assetDirs) {
+  const srcAbs = resolve(repoRoot, src);
+  if (!existsSync(srcAbs)) continue;
+  const dstAbs = resolve(contentDir, dst);
+  await mkdir(dirname(dstAbs), { recursive: true });
+  await cp(srcAbs, dstAbs, { recursive: true });
+  copiedAssetDirs++;
+}
+
+console.log(
+  `Synced ${files.length} files + 404 + ${copiedAssetDirs} asset dir(s) → ${contentDir}`,
+);

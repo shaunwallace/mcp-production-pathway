@@ -80,18 +80,7 @@ Three levels of telemetry, each useful for a different question.
 
 **Per-session traces** — a session is a tree. A user prompt at the root, tool calls as children, sometimes nested when one tool call's result drives the next. This is the unit of debugging an agentic system.
 
-```mermaid
-graph TB
-  Session["Session: 'Summarise the Acme deal'"]
-  T1["find_opportunity_by_name(Acme)"]
-  T2["get_opportunity_history(opp_123)"]
-  T3["search_recent_emails(account_abc)"]
-  T4["compose_summary(...)"]
-  Session --> T1
-  Session --> T2
-  Session --> T3
-  Session --> T4
-```
+![Per-session trace as a tree: a session "Summarise the Acme deal" at the root, with four tool calls as children — find_opportunity_by_name(Acme), get_opportunity_history(opp_123), search_recent_emails(account_abc), and compose_summary(...). The session, not the individual log line, is the unit of debugging.](assets/telemetry.png)
 
 When something goes wrong, you don't grep logs — you pull the session trace and look at it as a tree. OpenTelemetry is the natural fit; chapter 3's instrumentation wrapper extends to OTel spans without much ceremony, which is one of the reasons that wrapper is worth standardising on.
 

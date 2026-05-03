@@ -18,17 +18,7 @@ A working MCP system has four parts. Many people conflate them, and the conflati
 - **Server** — the thing exposing tools, resources, and prompts. A separate process. Owned by your platform team or by a third party. *This is what your team builds and operates.*
 - **LLM** — the model the host calls. **Not part of MCP.** MCP is host-to-server; the model sits behind the host and is independent of the protocol. Swapping models doesn't change your servers.
 
-```mermaid
-flowchart LR
-  User[User] --> Host
-  subgraph Host["Host (Claude Desktop, Cursor, internal agent)"]
-    Client1["MCP client"]
-    Client2["MCP client"]
-  end
-  Client1 <-->|MCP| Server1["Salesforce MCP server"]
-  Client2 <-->|MCP| Server2["Warehouse MCP server"]
-  Host <-->|not MCP| LLMAPI["LLM (Anthropic / OpenAI / etc.)"]
-```
+![A user talks to a host (Claude Desktop, Cursor, or an internal agent) which contains MCP clients. Each client speaks MCP to a separate server — one for Salesforce, one for the warehouse. The host also talks to an external LLM, which is not part of MCP.](assets/host-and-client.png)
 
 A common confusion worth flagging: people say "the MCP" as if it's a thing. It isn't. MCP is the protocol. *Servers* and *hosts* are things; MCP is what they speak. When someone says "we're building an MCP," they almost always mean "we're building an MCP server" — and the distinction matters because the server is the artefact your team owns.
 
@@ -50,31 +40,7 @@ The honest take: most servers in practice ship many tools, some resources, and f
 
 End-to-end, with Marlin's deal summariser as the example:
 
-```mermaid
-sequenceDiagram
-  participant U as User (sales rep)
-  participant H as Host (deal summariser)
-  participant L as LLM
-  participant C as MCP client (in host)
-  participant S as Salesforce MCP server
-
-  U->>H: "Summarise the Acme renewal"
-  H->>L: prompt + available tools (from S)
-  L-->>H: tool_use: find_opportunity_by_name("Acme renewal")
-  H->>C: invoke tool
-  C->>S: call find_opportunity_by_name
-  S-->>C: opportunity record
-  C-->>H: result
-  H->>L: prompt + tool result
-  L-->>H: tool_use: get_opportunity_history(id)
-  H->>C: invoke tool
-  C->>S: call get_opportunity_history
-  S-->>C: history
-  C-->>H: result
-  H->>L: prompt + tool results
-  L-->>H: final answer
-  H-->>U: rendered summary
-```
+![End-to-end sequence for "Summarise the Acme renewal": the user asks the host (deal summariser); the host sends prompt + available tools to the LLM; the LLM responds with a tool_use request which the host invokes via its MCP client against the Salesforce server; results flow back to the LLM; the loop continues with a second tool call for opportunity history; the LLM finally returns a synthesised summary which the host renders for the user.](assets/e2e-deal-summarizer.png)
 
 A few things to notice:
 
