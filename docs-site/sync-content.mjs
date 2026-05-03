@@ -158,14 +158,35 @@ function escapeAutolinksForMdx(text) {
 // absolute site routes based on the destination file's route directory so
 // the same source link works in both renderers. Skip http(s)://, anchors,
 // and absolute paths.
+//
+// README.md is synced to index.md (route = parent directory), so a link to
+// `README.md` should resolve to the directory route, not `/.../README/`.
 function resolveMdLinks(text, dstRouteDir) {
   return text.replace(
     /\]\(((?!https?:\/\/|#|\/)[^)]+?)\.md(#[^)]*)?\)/g,
     (_match, relPath, anchor = "") => {
-      const abs = posix.resolve(dstRouteDir, relPath);
-      return `](${abs}/${anchor})`;
+      let abs = posix.resolve(dstRouteDir, relPath);
+      abs = abs.replace(/\/README$/i, "");
+      if (abs === "") abs = "/";
+      const trailing = abs.endsWith("/") ? "" : "/";
+      return `](${abs}${trailing}${anchor})`;
     },
   );
+}
+
+// Astro/Starlight does NOT auto-prefix root-relative links in markdown
+// content with the configured `base`. So a link like `](/fast-track/foo/)`
+// in source becomes a broken `https://host/fast-track/foo/` instead of
+// `https://host/<base>/fast-track/foo/`. Run this after all other
+// transforms to prefix the base on every root-relative markdown link
+// that isn't already prefixed.
+function applyBasePrefix(text, base) {
+  if (!base || base === "/") return text;
+  const cleanBase = base.replace(/\/$/, "");
+  return text.replace(/\]\((\/[^)]*)\)/g, (match, path) => {
+    if (path === cleanBase || path.startsWith(cleanBase + "/")) return match;
+    return `](${cleanBase}${path})`;
+  });
 }
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -248,6 +269,7 @@ for (const [src, dst] of files) {
     text = injectComponentImports(escapeAutolinksForMdx(text), imports);
     dstAbs = dstAbs.replace(/\.md$/, ".mdx");
   }
+  text = applyBasePrefix(text, process.env.BASE);
   await writeFile(dstAbs, text);
 }
 
@@ -258,6 +280,9 @@ title: Not found
 
 That page doesn't exist. Try the sidebar, or head back to the [pathway overview](/).
 `;
-await writeFile(resolve(contentDir, "404.md"), notFound);
+await writeFile(
+  resolve(contentDir, "404.md"),
+  applyBasePrefix(notFound, process.env.BASE),
+);
 
 console.log(`Synced ${files.length} files + 404 → ${contentDir}`);
