@@ -1,0 +1,125 @@
+---
+// Override of @six-tech/starlight-theme-six's PageTitle that omits the
+// frontmatter `description` paragraph below the <h1>. Source markdown is
+// authored to also render well on GitHub (which doesn't surface frontmatter
+// as prose), so the body's opening paragraph already restates the description.
+// The previous CSS-only fix targeted `.page-title > p`, which doesn't match
+// the theme's bare <h1>/<p> output — hence the duplication kept appearing.
+//
+// The description still lands in <meta name="description"> via Starlight,
+// so SEO/social-card behaviour is preserved.
+
+const PAGE_TITLE_ID = '_top'
+
+const {
+  entry: {
+    data: { title, template, links },
+  },
+} = Astro.locals.starlightRoute
+
+const shouldRenderTitle = template !== 'splash'
+---
+
+{
+  template === 'doc' && (
+    <div class="breadcrumb">
+      <div class="truncate">Docs</div>
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <path d="m9 18 6-6-6-6" />
+      </svg>
+      <div class="text-foreground">{title}</div>
+    </div>
+  )
+}
+
+{shouldRenderTitle && <h1 id={PAGE_TITLE_ID}>{title}</h1>}
+
+{
+  links && (
+    <div class="links">
+      {links.doc && (
+        <a href={links.doc} target="_blank" rel="noreferrer">
+          {Astro.locals.t('six.links.doc')}
+        </a>
+      )}
+      {links.api && (
+        <a href={links.api} target="_blank" rel="noreferrer">
+          {Astro.locals.t('six.links.api')}
+        </a>
+      )}
+    </div>
+  )
+}
+
+<style>
+  .breadcrumb {
+    color: var(--muted-foreground);
+    line-height: 1;
+    font-size: 0.875rem;
+    align-items: center;
+    display: flex;
+    margin-bottom: 1rem;
+  }
+
+  .truncate {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .breadcrumb svg {
+    width: 0.875rem;
+    height: 0.875rem;
+    margin-left: 0.5rem;
+  }
+
+  .text-foreground {
+    color: var(--foreground-light);
+    margin-left: 0.5rem;
+  }
+
+  h1 {
+    color: var(--foreground-light);
+    letter-spacing: -0.025em;
+    font-weight: 800;
+    font-size: 2.875rem;
+    line-height: 3rem;
+    scroll-margin: 5rem;
+    margin: 0;
+  }
+
+  .links {
+    padding-top: 1rem;
+    align-items: center;
+    display: flex;
+  }
+
+  .links > a {
+    color: var(--secondary-foreground);
+    font-weight: 600;
+    font-size: 0.75rem;
+    line-height: 1rem;
+    padding: 0.125rem 0.625rem;
+    background-color: var(--secondary);
+    border-radius: calc(var(--radius) - 2px);
+    gap: 0.25rem;
+    align-items: center;
+    display: inline-flex;
+    text-decoration: inherit;
+  }
+
+  .links > a:not(:first-child) {
+    margin-right: 0.5rem;
+    margin-left: 0.5rem;
+  }
+</style>

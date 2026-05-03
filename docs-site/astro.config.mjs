@@ -20,6 +20,7 @@ export default defineConfig({
 			components: {
 				Sidebar: './src/overrides/Sidebar.astro',
 				SidebarSublist: './src/overrides/SidebarSublist.astro',
+				PageTitle: './src/overrides/PageTitle.astro',
 			},
 			logo: {
 				light: "./src/assets/logo-light.svg",
