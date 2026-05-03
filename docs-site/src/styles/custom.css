@@ -121,15 +121,6 @@ th :not(pre) > code {
   margin-bottom: 0.25rem;
 }
 
-/* The six-theme PageTitle renders frontmatter `description` as a visible <p>
-   below the <h1>. Most Starlight themes use `description` only for <meta>;
-   rendering it visually duplicates the body's opening paragraph. Hide it here
-   so we don't need a full PageTitle component override (which triggers a plugin
-   warning). The description is still emitted into <meta name="description">. */
-.page-title > p {
-  display: none;
-}
-
 /* Headings get Poppins display weights per brand spec. */
 :where(h1, h2, h3, h4, h5, h6) {
   font-family: var(--sl-font);
