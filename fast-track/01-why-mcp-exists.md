@@ -39,20 +39,9 @@ Today, when Marlin's deal-summariser team needs Salesforce data, they write a Sa
 
 After MCP, Marlin's data platform team can publish a Salesforce MCP server once. Every internal agent — current and future — consumes it. The integration becomes a **standalone capability** with its own owner, its own on-call, its own version lifecycle, its own SLOs.
 
-```mermaid
-flowchart LR
-  subgraph "Today: agent-coupled integration"
-    A1["Deal summariser team"] -.owns.-> SF1["SF client (theirs)"]
-    A2["Forecast bot team"] -.owns.-> SF2["SF client (theirs)"]
-    A3["Hygiene team"] -.owns.-> SF3["SF client (theirs)"]
-  end
-  subgraph "With MCP: capability-owned integration"
-    DP["Data platform team"] -.owns.-> M["Salesforce MCP server"]
-    B1["Deal summariser"] --> M
-    B2["Forecast bot"] --> M
-    B3["Hygiene assistant"] --> M
-  end
-```
+![Today: agent-coupled integration. Three feature teams — Deal summariser, Forecast bot, Hygiene — each separately own their own Salesforce client.](assets/agent-coupled-integration.png)
+
+![With MCP: capability-owned integration. The data platform team owns one Salesforce MCP server; the deal summariser, forecast bot, and hygiene assistant all consume it.](assets/mcp_capability-integration.png)
 
 This is mostly a re-org of who owns what. It is the right re-org, because integration logic ends up in the team that should have always owned it, with the disciplines (rate-limit handling, retry policy, audit logging, credential rotation) that integration teams are already good at and that feature teams systematically aren't.
 
