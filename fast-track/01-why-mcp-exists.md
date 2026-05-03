@@ -80,21 +80,7 @@ The pre-MCP version of this work: an analyst writes SQL, exports CSVs, joins the
 
 The MCP-enabled version: the analyst asks an agent. The agent has MCP servers for the warehouse, the semantic layer, the ticketing system, the internal documentation, and the dashboarding tool. It can roam.
 
-```mermaid
-flowchart TB
-  Q["Analyst: 'Why did EMEA bookings miss in Q3?'"]
-  A["Agent loop"]
-  W["Warehouse MCP server"]
-  S["Semantic layer MCP server"]
-  D["Internal docs MCP server"]
-  T["Ticketing MCP server"]
-  Q --> A
-  A <--> W
-  A <--> S
-  A <--> D
-  A <--> T
-  A --> R["Synthesised answer + citations + filed ticket for missing dimension"]
-```
+![An analyst's question fans out through an agent loop to four MCP servers — warehouse, semantic layer, internal docs, ticketing — and returns as a synthesised answer with citations and a filed ticket for the missing dimension.](assets/agentic-exploration-loop.png)
 
 In a single session that loop can:
 
