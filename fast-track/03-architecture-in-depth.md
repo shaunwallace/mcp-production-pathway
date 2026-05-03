@@ -33,20 +33,7 @@ Three different identities flow through the system, and conflating them is how m
 
 Concretely, when one of Marlin's customers — call them Acme — uses their own Claude Desktop to query Marlin's Salesforce MCP server:
 
-```mermaid
-sequenceDiagram
-  participant U as Acme rep
-  participant CD as Claude Desktop (Acme's)
-  participant M as Marlin Salesforce MCP server
-  participant SF as Acme's Salesforce instance
-
-  U->>CD: "Show me my open deals"
-  CD->>M: tool call + Acme rep's bearer token
-  M->>M: validate token; identify tenant (Acme) + user (rep)
-  M->>SF: query, scoped to Acme + rep's permissions
-  SF-->>M: deals (only ones rep can see)
-  M-->>CD: filtered result
-```
+![Multi-tenancy identity flow: an Acme rep asks "Show me my open deals" in Acme's Claude Desktop. The host calls Marlin's Salesforce MCP server with the rep's bearer token. The server validates the token, identifies the tenant (Acme) and user (rep), queries Acme's Salesforce instance scoped to the rep's permissions, and returns only the deals the rep can see.](assets/multi-tenancy-architecture.png)
 
 A few things have to be true for this not to be a leak:
 
@@ -106,34 +93,7 @@ The realistic architecture for an organisation a year into MCP investment is **m
 
 Marlin's likely shape:
 
-```mermaid
-flowchart LR
-  subgraph Hosts
-    H1["Deal summariser"]
-    H2["Forecast bot"]
-    H3["Hygiene assistant"]
-    H4["Engineers' Claude Desktop"]
-  end
-  subgraph Servers
-    S1["Salesforce"]
-    S2["HubSpot"]
-    S3["Slack"]
-    S4["Gong"]
-    S5["Warehouse"]
-    S6["Internal docs"]
-    S7["Ticketing"]
-  end
-  H1 --> S1
-  H1 --> S4
-  H1 --> S3
-  H2 --> S5
-  H2 --> S6
-  H3 --> S1
-  H3 --> S2
-  H4 --> S5
-  H4 --> S6
-  H4 --> S7
-```
+![Many small purpose-built servers connected directly to hosts. Four hosts — deal summariser, forecast bot, hygiene assistant, engineers' Claude Desktop — each wire up to the subset of seven servers (Salesforce, HubSpot, Slack, Gong, Warehouse, Internal docs, Ticketing) they actually need.](assets/server-composition.png)
 
 Each server owned by the team that should own that capability. Each independently versioned, deployed, monitored. Each host wires up to the servers it needs — no coupling between hosts, no coupling between servers.
 
