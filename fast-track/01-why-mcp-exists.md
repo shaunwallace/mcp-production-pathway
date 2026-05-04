@@ -15,7 +15,7 @@ Strip away the marketing. The gap MCP fills is narrower than "AI integration is 
 
 The actual gap is this: every LLM-driven runtime — Claude Desktop, an internal agent loop, Cursor, a customer-support copilot — needs to **discover what tools and data are available, read their schemas, invoke them with appropriate arguments, and consume the results in a structured way the model can act on**. There was no standard for that. So every team built it again. Different discovery formats. Different invocation conventions. Different ways of expressing "this is a resource you can read" versus "this is a tool you can call" versus "this is a prompt template you can fill."
 
-This is a small, well-scoped problem. The Model Context Protocol — released by Anthropic in late 2024, open-spec from day one — solves it. It does not solve API design, upstream auth, schema drift in your warehouse, or any of the other genuinely hard parts of integration. Those remain hard.
+This is a small, well-scoped problem. The Model Context Protocol — [released by Anthropic in late 2024](https://www.anthropic.com/news/model-context-protocol), open-spec from day one — solves it. It does not solve API design, upstream auth, schema drift in your warehouse, or any of the other genuinely hard parts of integration. Those remain hard.
 
 What MCP gives you is **one consistent shape for the LLM host ↔ capability boundary**, which is the boundary that previously had no shape at all.
 
@@ -122,7 +122,7 @@ A short list, because honest framing requires it:
 
 MCP is not the only protocol in this space. Engineering leaders should be able to explain how it sits next to the others without falling into either "MCP wins" tribalism or "wait for a better one" paralysis.
 
-**A2A (Agent-to-Agent), Google.**
+**[A2A (Agent-to-Agent), Google](https://github.com/google-a2a/A2A).**
 A2A defines how *agents talk to other agents* — task delegation, capability advertisement, coordination across multi-agent systems. MCP defines how *one agent talks to tools and resources*. They sit at different layers and are **complementary, not competitive**. A realistic near-future architecture has agents using A2A to delegate work to specialised agents that themselves use MCP to call tools. If your organisation is choosing one to invest in this year, MCP is the right one — agent-to-tool integration is the bottleneck most organisations hit first; multi-agent coordination is the bottleneck they hit second, after the first is solved.
 
 **OpenAI function calling, Anthropic tool use, and other per-vendor formats.**
@@ -137,6 +137,55 @@ The thing MCP servers usually wrap. OpenAPI describes APIs; MCP describes how an
 **No protocol — bespoke integration per agent.**
 Still defensible if you're integrating one agent with one upstream and you will never need a second of either. Most organisations don't get to stay in that posture for long, and the bespoke code you write today gets thrown away when the second agent arrives. With MCP, the *clients* may evolve while your *servers* persist.
 
+## Skills and MCP — adjacent, not alternative
+
+The question that comes up most often once a leader has the MCP model in their head: *how does this relate to Claude Skills?* They look superficially similar — both extend what an agent can do — and the marketing around both is enthusiastic enough to blur the line. The line is worth drawing clearly, because they solve different problems and the right architecture usually uses both.
+
+**A Skill is a folder.** At its simplest, a Skill is a directory with a `SKILL.md` describing when to use it, optionally accompanied by reference docs, scripts, and assets. The host (Claude Code, Claude Desktop, the Anthropic API with the skills feature enabled) loads the `SKILL.md` descriptions into context, decides when one is relevant, and then pulls in the rest of the folder on demand. Skills run *inside* the host's execution environment — when a Skill's instructions say "run this Python script," the host runs it locally with whatever filesystem and tools it already has.
+
+**An MCP server is a process.** It runs separately, exposes a typed tool surface over a protocol, and is consumed identically by every compliant host. It owns its own credentials, its own rate limiting, its own audit log. The host calls it; it doesn't run inside the host.
+
+That distinction — *bundled instructions and assets* versus *a separately-running typed capability* — is the whole thing. Most of the apparent overlap dissolves once you hold it.
+
+### What they have in common
+
+- Both are mechanisms for *progressive disclosure*: the model sees a short description first and only pulls in the full detail when it decides the capability is relevant. This matters because context windows have a budget.
+- Both are *host-agnostic in principle*: a well-written Skill or MCP server is consumable by any host that supports the respective mechanism, not bound to a specific agent codebase.
+- Both live or die by the **same load-bearing design choice as tools**: the description the model reads when deciding whether to engage. A Skill with a vague `SKILL.md` description will be ignored exactly as a tool with a vague description will be skipped. Chapter 2's "tool descriptions are prompts" claim applies to Skills word-for-word.
+- Both are **composable**: a host can have many Skills and many MCP server connections simultaneously, and the model picks across all of them.
+
+### Where they differ, and why it matters
+
+- **Execution location.** Skills execute in the host's environment; MCP servers execute in their own. If the capability needs credentials the host shouldn't have, network access the host shouldn't have, or isolation from the host's filesystem, it belongs in an MCP server. If the capability is "given the files the user has in front of them, do this transformation," it belongs in a Skill.
+- **State and ownership.** MCP servers are *operated*. They have an on-call, a deploy pipeline, a version, an SLO. Skills are *authored* — closer to a well-organised runbook than a service. A Skill doesn't have an SLO; the host that runs it does.
+- **Multi-tenancy.** A remote MCP server can serve thousands of customers, each with their own auth scope. Skills don't multi-tenant; they're loaded per-host-session. If your capability needs to enforce per-tenant data boundaries, it must be an MCP server. A Skill cannot meaningfully do this on its own.
+- **Determinism of capability.** A Skill can include scripts that the model invokes verbatim — useful when you want the same operation done the same way every time. MCP tools are typed function calls with structured arguments; the model fills the arguments but the operation is fixed by the server. Both are more deterministic than free prose, in different ways.
+- **Update cadence.** Updating a Skill is a `git pull` against a folder. Updating an MCP server is a deploy. The latter is heavier; the former is appropriate for capabilities that genuinely change quickly and don't need an operations story.
+
+### When to reach for which
+
+A useful first cut, in Marlin's vocabulary:
+
+- **MCP server** when the capability is *talking to a system Marlin operates or integrates with* — Salesforce, the warehouse, the ticketing system, Marlin's own product. Anything that needs credentials, multi-tenancy, audit logging, or rate limiting. Anything that customers' agents might eventually consume. Anything where "who's allowed to do this?" has a non-trivial answer.
+- **Skill** when the capability is *a way of working* the model should adopt — a house style for writing forecast memos, a structured approach to reviewing pipeline-hygiene reports, a packaged set of reference materials and helper scripts for triaging deal-stage anomalies. Anything that's mostly *instructions and reference content* with optional helper code, where the host's own environment is sufficient to execute.
+- **Both** when the way of working *uses* the systems. A "weekly forecast review" Skill that walks the model through Marlin's review methodology will, in the course of doing that, call MCP tools against the warehouse and Salesforce. The Skill encodes the process; the MCP servers expose the capabilities the process needs.
+
+The shorthand: **MCP is for capabilities, Skills are for know-how.** Capabilities need operating; know-how needs authoring. They compose cleanly because they're answering different questions.
+
+### Where they work well together
+
+The architecture pattern that's emerging for organisations that take both seriously: a **small number of well-operated MCP servers** owned by the platform team, plus a **growing library of Skills** authored by the teams closest to the work, each Skill pulling on whichever MCP servers it needs.
+
+Marlin's shape, made concrete:
+
+- The platform team operates four MCP servers — Salesforce, warehouse, ticketing, internal docs. Each has an owner, an on-call, a versioning story.
+- The RevOps team authors a `forecast-review` Skill that encodes how Marlin runs forecast calls — what to look at, in what order, what counts as a red flag. The Skill calls the warehouse and Salesforce MCP servers as it works.
+- The customer-success team authors a `churn-investigation` Skill that uses the same MCP servers but encodes a different methodology and a different set of red flags.
+
+Two Skills, four servers, no duplication. The platform team isn't on the hook for understanding forecast methodology, and the RevOps team isn't on the hook for credential rotation against Salesforce. Each side owns the part it's best placed to own.
+
+This is the same ownership-shape argument from earlier in the chapter, applied one level up: Skills are to MCP servers what feature teams are to platform teams. The protocol just made it possible for the seam between them to be clean.
+
 ## What to take from this chapter
 
 The honest framing, in five lines:
@@ -145,6 +194,7 @@ The honest framing, in five lines:
 - It changes the *ownership shape* of integration work inside your organisation, makes internal capabilities reusable across both human and agent consumers, and opens a new external consumption mode in which customers' own agents call your product directly.
 - Its highest-leverage near-term use case is agentic work over your own data — exploration loops that BI tools structurally could not do.
 - It is **complementary** to A2A, not a substitute. It supersedes per-vendor function-calling formats only if cross-host portability matters to you, which it usually does.
+- It is also **complementary to Skills**: MCP is for capabilities (operated by a platform team), Skills are for know-how (authored by the teams closest to the work). The mature architecture uses both.
 - It does not solve auth, API design, agent reliability, or any of the genuinely hard problems. Those problems are the rest of this track.
 
 Chapter 2 takes the host/client/server model and gives it teeth — what each piece actually is, how a request flows end to end, and the single design decision (tool naming) that disproportionately determines whether your agents work in production.

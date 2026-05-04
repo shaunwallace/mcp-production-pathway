@@ -19,6 +19,8 @@ Pure consumption. No exercises, no artefacts to produce.
 4. [The risk surface](04-risk-surface.md) — prompt injection, auth, exfiltration, STRIDE for MCP
 5. [Making it reliable](05-making-it-reliable.md) — evals, observability, cost, versioning
 
+Plus an appendix: [Resources and further reading](resources.md) — a short, opinionated list of canonical references (spec, SDKs, foundational Anthropic posts, A2A, talks) for going deeper without disappearing into the weeds.
+
 ## A recurring example
 
 Every chapter grounds itself in **Marlin**, a fictional mid-market RevOps SaaS. Marlin sells pipeline analytics and forecast tooling to B2B sales orgs and integrates with Salesforce, HubSpot, Slack, Gong, and Snowflake. It's a useful teaching vehicle precisely because its problems — multi-system integration, multi-tenancy, materially-sensitive data — are unglamorously typical.
