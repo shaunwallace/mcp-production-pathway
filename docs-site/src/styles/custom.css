@@ -109,6 +109,53 @@ th :not(pre) > code {
   word-break: break-word;
 }
 
+/* Wide tables scroll horizontally inside their own box instead of
+   stretching the main column on narrow viewports. `display: block` lets
+   the element scroll; `width: max-content` + `max-width: 100%` keeps the
+   table at its natural width up to the column edge, then clips with a
+   scrollbar. */
+.sl-markdown-content table {
+  display: block;
+  width: max-content;
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+/* Prev/next pager: the six-tech theme's scoped styles set
+   `white-space: nowrap` and `min-width: 160px` on each link, which on
+   narrow viewports makes the labels overflow out of their boxes and into
+   each other. Astro scoped styles win on specificity (data-astro-cid),
+   so the override needs !important to take effect. */
+.pagination-links {
+  gap: 0.75rem;
+}
+.pagination-links a {
+  min-width: 0 !important;
+  white-space: normal !important;
+  flex: 1 1 0;
+}
+.pagination-links .pagination-content {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+.pagination-links .pagination-label {
+  white-space: normal !important;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+/* On phones the page titles are too long for the pager boxes — hide the
+   label and just show the direction + arrow. The arrow link still
+   navigates, and "Previous"/"Next" is enough orientation. */
+@media (max-width: 30rem) {
+  .pagination-links .pagination-label {
+    display: none;
+  }
+  .pagination-links .pagination-content {
+    padding: 0;
+  }
+}
+
 /* Subhead utility — Signal Red label above a section heading.
    Use as a small <p class="subhead"> inline in markdown where the
    page benefits from a label/eyebrow above an h2. */
@@ -129,3 +176,23 @@ th :not(pre) > code {
 :where(h1) { font-weight: 700; }
 :where(h2) { font-weight: 600; }
 :where(h3) { font-weight: 600; }
+
+/* Headings shrink on narrow viewports — Starlight's defaults assume
+   desktop column widths and overflow on phones (e.g. "Now you're ready"
+   in the screenshot). Override the relevant Starlight type-scale tokens
+   plus the prose H1 directly. */
+@media (max-width: 50rem) {
+  :root {
+    --sl-text-h1: 1.875rem;
+    --sl-text-h2: 1.5rem;
+    --sl-text-h3: 1.25rem;
+    --sl-text-h4: 1.125rem;
+  }
+  .sl-markdown-content :is(h1, h2, h3, h4) {
+    overflow-wrap: anywhere;
+  }
+  .sl-markdown-content h1 { font-size: var(--sl-text-h1); }
+  .sl-markdown-content h2 { font-size: var(--sl-text-h2); }
+  .sl-markdown-content h3 { font-size: var(--sl-text-h3); }
+  .sl-markdown-content h4 { font-size: var(--sl-text-h4); }
+}

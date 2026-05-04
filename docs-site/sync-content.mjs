@@ -230,6 +230,7 @@ const files = [
   ["fast-track/03-architecture-in-depth.md",                 "fast-track/03-architecture-in-depth.md"],
   ["fast-track/04-risk-surface.md",                          "fast-track/04-risk-surface.md"],
   ["fast-track/05-making-it-reliable.md",                    "fast-track/05-making-it-reliable.md"],
+  ["fast-track/resources.md",                                "fast-track/resources.md"],
 ];
 
 // Asset directories to copy verbatim alongside the markdown so relative

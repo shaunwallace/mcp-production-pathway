@@ -96,6 +96,14 @@ const shouldRenderTitle = template !== 'splash'
     line-height: 3rem;
     scroll-margin: 5rem;
     margin: 0;
+    overflow-wrap: anywhere;
+  }
+
+  @media (max-width: 50rem) {
+    h1 {
+      font-size: 1.75rem;
+      line-height: 2.125rem;
+    }
   }
 
   .links {

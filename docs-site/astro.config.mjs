@@ -56,6 +56,7 @@ export default defineConfig({
 				  { label: "3 — Architecture in depth", slug: "fast-track/03-architecture-in-depth" },
 				  { label: "4 — The risk surface", slug: "fast-track/04-risk-surface" },
 				  { label: "5 — Making it reliable", slug: "fast-track/05-making-it-reliable" },
+				  { label: "Resources and further reading", slug: "fast-track/resources" },
 				],
 			  },
 			  {
