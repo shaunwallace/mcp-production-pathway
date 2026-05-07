@@ -11,7 +11,7 @@ You will not be writing code. You will be making investment, risk, and go-to-mar
 
 ## The one-paragraph version
 
-The **Model Context Protocol** (MCP) is an open standard, [released by Anthropic in late 2024](https://www.anthropic.com/news/model-context-protocol), for how AI assistants connect to the systems where your business actually runs — CRM, data warehouse, ticketing, internal documents. Before MCP, every connection was bespoke work, repeated by every team that needed it. After MCP, you build each one once and every AI tool in the company can use it. The protocol standardises *integration* — not model behaviour, not safety, not orchestration. Those remain the genuinely hard parts. Everything below is implications.
+The **Model Context Protocol** (MCP) is an open standard, [released by Anthropic in late 2024](https://www.anthropic.com/news/model-context-protocol), for how AI assistants connect to the systems where your business actually runs — CRM, data warehouse, ticketing, internal documents. Before MCP, every connection was bespoke work, repeated by every team that needed it. After MCP, you build each one once and every MCP-capable tool in the company can use it. The protocol standardises how AI tools *connect* to systems — not model behaviour, not safety, not orchestration. Those remain the genuinely hard parts. Everything below is implications.
 
 ## Three analogies, in three different registers
 
@@ -39,7 +39,7 @@ Three implications, all reasonably concrete.
 
 Today, if your company has three AI features that all need Salesforce data, three different teams have probably written three different Salesforce integrations. Each carries its own bugs, auth handling, retry policy, and on-call burden. The marginal cost of the *fourth* feature ends up looking surprisingly similar to the first.
 
-After MCP, the integration is built once by the team that owns it, and every subsequent AI feature consumes it. The marginal cost of additional features drops materially because the protocol layer is already in place. This is the same dynamic shared platform teams have always produced, but with a more predictable build cycle because the protocol is fixed.
+After MCP, the integration is built once by the team that owns it, and every subsequent AI feature consumes it. The marginal cost of additional features drops materially because the protocol layer is already in place. This is the same dynamic shared platform teams have always produced, but with a more predictable build cycle because the integration pattern is standardised.
 
 For a CFO: this changes the unit economics of AI feature development from "approximately linear in number of features" to "approximately linear in number of *systems integrated*." Most companies have a finite number of core systems and an unbounded list of possible features. That is a favourable shape.
 
