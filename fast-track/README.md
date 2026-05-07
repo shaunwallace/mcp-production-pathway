@@ -5,6 +5,8 @@ description: A 5-chapter, ~5-hour distillation of the 12-week MCP pathway for se
 
 # Leader Fast Track
 
+> **Not an engineering leader?** If you're a **CEO, CFO, COO, or sales leader** who needs to understand MCP commercially — for funding, governance, positioning, or customer conversations — start with the [**Executive Brief**](executive-brief.md). It's a 20-minute, non-technical companion that uses business analogies (shipping containers, power sockets) instead of code, and includes a curated resource list for non-technical readers. Come back to this fast track only if you want the engineering depth.
+
 A 5-chapter, ~5-hour distillation of the 12-week MCP pathway for senior engineering leaders — CTO, VP Eng, Head of, Director.
 
 If you have engineers about to go through the full 12-week track and you want to brief yourself first, this is the right starting point. It's standalone: read only this and you'll have a working mental model of MCP, the risk surface, and what production-grade looks like.
@@ -13,6 +15,7 @@ Pure consumption. No exercises, no artefacts to produce.
 
 ## Chapters
 
+0. [Executive Brief](executive-brief.md) — *for CEOs, CFOs, and sales leaders.* A 20-minute, non-technical version. Skip if you're an engineering leader and start at chapter 1.
 1. [What MCP is, and what it changes](01-why-mcp-exists.md) — the honest version of the problem, what it opens up for your organisation, and how it relates to A2A and the alternatives
 2. [The mental model](02-mental-model.md) — host, client, server, and why tool names are the API
 3. [Architecture in depth](03-architecture-in-depth.md) — transports, topologies, and tool design
