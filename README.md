@@ -44,7 +44,10 @@ The right way to use it is to create your own private workbook from this templat
 | 5 | 10-11 | Caching, cost attribution, load testing |
 | 6 | 12 | Security, threat model, PII, hostile inputs, close-out |
 
-A 5-chapter **Leader Fast Track** distillation lives alongside the full pathway for senior engineering leaders who want the strategic shape without the build. See `fast-track/`.
+> **Not building it yourself?** Two shorter tracks live alongside the 12-week pathway for leaders who need the shape without the build.
+>
+> - **Engineering leaders** (CTO, VP Eng, Director) — the [**Leader Fast Track**](fast-track/) is a 5-chapter, ~5-hour distillation covering mental model, architecture, risk surface, and what production-grade looks like.
+> - **CEOs, CFOs, COOs, and sales leaders** — the [**Executive Brief**](fast-track/executive-brief.md) is a 20-minute, non-technical companion. Business analogies instead of code, the commercial framing of the cost curve and risk surface, five questions to evaluate engineering maturity, and a curated resource list.
 
 ### What each week covers
 
