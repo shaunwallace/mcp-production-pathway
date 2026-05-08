@@ -225,6 +225,7 @@ const files = [
   ["server/README.md",                                       "server/readme.md"],
   ["harness/README.md",                                      "harness/readme.md"],
   ["fast-track/README.md",                                   "fast-track/index.md"],
+  ["fast-track/executive-brief.md",                          "fast-track/executive-brief.md"],
   ["fast-track/01-why-mcp-exists.md",                        "fast-track/01-why-mcp-exists.md"],
   ["fast-track/02-mental-model.md",                          "fast-track/02-mental-model.md"],
   ["fast-track/03-architecture-in-depth.md",                 "fast-track/03-architecture-in-depth.md"],

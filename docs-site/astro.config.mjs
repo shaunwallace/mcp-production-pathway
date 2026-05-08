@@ -51,6 +51,7 @@ export default defineConfig({
 				label: "Leader fast track",
 				items: [
 				  { label: "Overview", slug: "fast-track" },
+				  { label: "Executive brief (CEO / CFO / Sales)", slug: "fast-track/executive-brief" },
 				  { label: "1 — What MCP is, and what it changes", slug: "fast-track/01-why-mcp-exists" },
 				  { label: "2 — The mental model", slug: "fast-track/02-mental-model" },
 				  { label: "3 — Architecture in depth", slug: "fast-track/03-architecture-in-depth" },
