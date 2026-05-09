@@ -17,6 +17,8 @@ The **Model Context Protocol** (MCP) is an open standard, [released by Anthropic
 
 Pick whichever lands for the audience you're talking to. They make the same point in three different domains so that at least one will stick.
 
+![Three-panel technical illustration in the register of the 1976 NASA Graphics Standards Manual, contrasting a "before" mess of bespoke connections with an "after" of standardised interfaces, in three panels: shipping containers, power sockets, and ODBC/JDBC for AI.](assets/exec-01-three-analogies.svg)
+
 ### 1. Shipping containers
 
 Before standardised containers, every cargo type had its own loading methods, trucks, and cranes. Containerisation didn't change what was being shipped — it changed the cost and reliability of moving it. MCP plays the same role for AI integrations: the goods don't change, the interface between them does.
@@ -37,6 +39,8 @@ Three implications, all reasonably concrete.
 
 ### 1. AI features get cheaper to build, and the cost curve bends
 
+![Two-line chart in the register of a 1976 NASA technical document. The dashed black "Without MCP" line stays roughly flat-and-high across feature count; the solid red "With MCP" line starts at the same point, then bends sharply downward and flattens — labelled "the standardisation dividend".](assets/exec-02-cost-curve.svg)
+
 Today, if your company has three AI features that all need Salesforce data, three different teams have probably written three different Salesforce integrations. Each carries its own bugs, auth handling, retry policy, and on-call burden. The marginal cost of the *fourth* feature ends up looking surprisingly similar to the first.
 
 After MCP, the integration is built once by the team that owns it, and every subsequent AI feature consumes it. The marginal cost of additional features drops materially because the protocol layer is already in place. This is the same dynamic shared platform teams have always produced, but with a more predictable build cycle because the integration pattern is standardised.
@@ -51,6 +55,8 @@ This is not a complete escape from lock-in. Model behaviour, eval infrastructure
 
 ### 3. "AI inside the company" stops being a project and becomes a property
 
+![Two-panel before/after illustration. Left panel ("Detail A — Project model"): a single heavy block labelled "Internal AI Assistant (v1)" with a Q3 delivery bar and three employee nodes waiting outside. Right panel ("Detail B — Emergent model"): three MCP servers (warehouse, CRM, docs) surrounded by AI tools (Claude Desktop, code-editor copilot, internal chatbot) already connected, with employees inside the network.](assets/exec-04-emergent-internal-ai.svg)
+
 Once you have a few internal MCP servers — your warehouse, your incident management system, your CRM — every AI tool your employees already use can connect to them. The internal AI assistant is no longer a thing IT has to ship. It is an emergent capability of the servers existing.
 
 For a CEO: this changes the answer to "when will we have AI internally?" from "when IT delivers it" to "as soon as we publish the servers — and govern them."
@@ -58,6 +64,8 @@ For a CEO: this changes the answer to "when will we have AI internally?" from "w
 ## The risk surface, in business terms
 
 MCP makes integration cheaper. It does **not** make AI safer by itself. If anything, it raises the importance of governance, because more systems become reachable through AI tooling. Three risk categories matter.
+
+![Technical illustration of the risk surface: three "untrusted input" sources on the left (customer email, support ticket, public web page) connect to a central "AI assistant" node with connected tools, which connects to three "sensitive data" stores on the right (customer records, financial data, internal documents). A single highlighted red arc traces the prompt-injection-to-exfiltration path through the network.](assets/exec-03-risk-surface.svg)
 
 ### Prompt injection — social engineering, but for AI
 
