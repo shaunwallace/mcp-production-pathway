@@ -2,6 +2,7 @@
 import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
 import starlightThemeSix from '@six-tech/starlight-theme-six';
+import starlightImageZoom from 'starlight-image-zoom';
 
 // https://astro.build/config
 //
@@ -37,6 +38,7 @@ export default defineConfig({
 					],
 					footerText: "Template — fork and make it your own. MIT licensed.",
 				}),
+				starlightImageZoom(),
 			],
 			sidebar: [
 			  {
