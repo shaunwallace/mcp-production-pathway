@@ -24,6 +24,22 @@ export default defineConfig({
 				PageTitle: './src/overrides/PageTitle.astro',
 				MarkdownContent: './src/overrides/MarkdownContent.astro',
 			},
+			head: [
+				// Pre-paint: read stored sidebar/TOC visibility preference and
+				// stamp matching data-attrs on <html> before the first paint, so
+				// hidden sidebars don't flash visible on load. Default state
+				// (no localStorage entry) leaves both sidebars open.
+				{
+					tag: 'script',
+					content:
+						"(function(){try{var s=localStorage.getItem('docs-sidebar-hidden');var t=localStorage.getItem('docs-toc-hidden');if(s==='1')document.documentElement.dataset.sidebarHidden='';if(t==='1')document.documentElement.dataset.tocHidden='';}catch(e){}})();",
+				},
+				// Deferred: floating-pill UI + click handlers.
+				{
+					tag: 'script',
+					attrs: { src: '/scripts/sidebar-toggles.js', defer: true },
+				},
+			],
 			logo: {
 				light: "./src/assets/logo-light.svg",
 				dark: "./src/assets/logo-dark.svg",
