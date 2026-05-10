@@ -22,6 +22,7 @@ export default defineConfig({
 				Sidebar: './src/overrides/Sidebar.astro',
 				SidebarSublist: './src/overrides/SidebarSublist.astro',
 				PageTitle: './src/overrides/PageTitle.astro',
+				MarkdownContent: './src/overrides/MarkdownContent.astro',
 			},
 			logo: {
 				light: "./src/assets/logo-light.svg",

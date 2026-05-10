@@ -1,0 +1,22 @@
+---
+// Override that composes both:
+// 1. @six-tech/starlight-theme-six's MarkdownContent — wraps content in
+//    .markdown-wrapper > .sl-markdown-content and imports markdown.css.
+// 2. starlight-image-zoom's MarkdownContent — renders the <ImageZoom />
+//    component which injects the web-component script and zoom styles.
+//
+// Both plugins ship a MarkdownContent override and only one can win in
+// Starlight's component-override system. Without this composition, the
+// plugin loaded later silently discards the earlier one. The visible
+// symptom: zoom buttons render on images but clicking them does nothing
+// because the custom-element JS never loaded.
+import '@astrojs/starlight/style/markdown.css'
+import ImageZoom from 'starlight-image-zoom/components/ImageZoom.astro'
+---
+
+<ImageZoom />
+<div class="markdown-wrapper">
+  <div class="sl-markdown-content">
+    <slot />
+  </div>
+</div>
