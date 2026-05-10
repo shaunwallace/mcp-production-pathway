@@ -211,3 +211,101 @@ th :not(pre) > code {
   color: var(--sl-color-gray-3);
   margin-top: 0.5rem;
 }
+
+/* Sidebar toggle pill — floating bottom-right control that hides /
+   shows the left sidebar (site nav) and right sidebar (page TOC).
+   State is set on <html data-sidebar-hidden> / <html data-toc-hidden>
+   by /scripts/sidebar-toggles.js and persisted in localStorage.
+   These rules were lost in PR #20's merge conflict resolution; the
+   script and head config landed but the CSS dropped, leaving the
+   pill rendered without styling (effectively invisible). */
+
+/* When sidebar is hidden, drop the .aside out of the layout and
+   collapse the grid's left column. */
+:root[data-sidebar-hidden] .aside {
+  display: none !important;
+}
+:root[data-sidebar-hidden] .container-wrapper-main {
+  grid-template-columns: minmax(0, 1fr) !important;
+  gap: 0 !important;
+}
+
+/* When TOC is hidden, drop it out of the right column. */
+:root[data-toc-hidden] .toc {
+  display: none !important;
+}
+
+/* Use the recovered space — the prose stays centred, but the
+   max-width grows so reading takes more of the screen when one or
+   both sidebars are hidden. */
+:root[data-sidebar-hidden] .main:where(.astro-6xh4gtca),
+:root[data-toc-hidden] .main:where(.astro-6xh4gtca) {
+  max-width: 52rem;
+}
+:root[data-sidebar-hidden][data-toc-hidden] .main:where(.astro-6xh4gtca) {
+  max-width: 64rem;
+}
+
+/* The pill itself. Hidden on viewports narrower than the desktop
+   layout breakpoint — Starlight already collapses the sidebars there
+   behind the hamburger menu. */
+.sidebar-toggle-pill {
+  display: none;
+  position: fixed;
+  z-index: 50;
+  right: 1.25rem;
+  bottom: 1.25rem;
+  align-items: center;
+  padding: 0.25rem;
+  border-radius: 999px;
+  background-color: var(--card, var(--sl-color-gray-6));
+  border: 1px solid var(--border, var(--sl-color-gray-5));
+  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.04), 0 4px 12px -2px rgb(0 0 0 / 0.08);
+  backdrop-filter: blur(8px);
+  font-family: var(--sl-font);
+}
+@media (min-width: 768px) {
+  .sidebar-toggle-pill {
+    display: inline-flex;
+  }
+}
+@media (max-width: 1279px) {
+  .sidebar-toggle-pill__btn[data-toggle='toc'],
+  .sidebar-toggle-pill__divider {
+    display: none;
+  }
+}
+
+.sidebar-toggle-pill__btn {
+  appearance: none;
+  background: transparent;
+  border: none;
+  border-radius: 999px;
+  width: 2rem;
+  height: 2rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted-foreground, var(--sl-color-gray-2));
+  cursor: pointer;
+  transition: color 0.15s, background-color 0.15s;
+}
+.sidebar-toggle-pill__btn:hover {
+  color: var(--foreground, var(--sl-color-white));
+  background-color: var(--muted, color-mix(in oklab, var(--sl-color-gray-5) 60%, transparent));
+}
+.sidebar-toggle-pill__btn[aria-pressed='true'] {
+  color: var(--accent-foreground, var(--sl-color-white));
+  background-color: var(--accent, var(--sl-color-accent));
+}
+
+.sidebar-toggle-pill__divider {
+  width: 1px;
+  height: 1.25rem;
+  background-color: var(--border, var(--sl-color-gray-5));
+  margin: 0 0.125rem;
+}
+
+@media print {
+  .sidebar-toggle-pill { display: none !important; }
+}
