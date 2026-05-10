@@ -9,6 +9,12 @@ import starlightImageZoom from 'starlight-image-zoom';
 // `site` and `base` are injected by the GitHub Pages workflow
 // (.github/workflows/pages.yml) via actions/configure-pages. They're undefined
 // for local dev, which is fine — Astro defaults to localhost/'/'.
+
+// Strip a trailing slash so it composes cleanly with paths that start
+// with `/` (e.g. `${BASE_PATH}/scripts/sidebar-toggles.js`). Empty in
+// local dev, `/mcp-production-pathway` on Pages.
+const BASE_PATH = (process.env.BASE || '').replace(/\/$/, '');
+
 export default defineConfig({
 	site: process.env.SITE,
 	base: process.env.BASE,
@@ -34,10 +40,14 @@ export default defineConfig({
 					content:
 						"(function(){try{var s=localStorage.getItem('docs-sidebar-hidden');var t=localStorage.getItem('docs-toc-hidden');if(s==='1')document.documentElement.dataset.sidebarHidden='';if(t==='1')document.documentElement.dataset.tocHidden='';}catch(e){}})();",
 				},
-				// Deferred: floating-pill UI + click handlers.
+				// Deferred: floating-pill UI + click handlers. The src has to
+				// be prefixed with BASE_PATH manually — Starlight's `head` config
+				// renders attrs verbatim and doesn't run them through Astro's
+				// asset pipeline, so a bare `/scripts/...` path 404s on Pages
+				// where the site is served under `/mcp-production-pathway/`.
 				{
 					tag: 'script',
-					attrs: { src: '/scripts/sidebar-toggles.js', defer: true },
+					attrs: { src: `${BASE_PATH}/scripts/sidebar-toggles.js`, defer: true },
 				},
 			],
 			logo: {
