@@ -196,3 +196,18 @@ th :not(pre) > code {
   .sl-markdown-content h3 { font-size: var(--sl-text-h3); }
   .sl-markdown-content h4 { font-size: var(--sl-text-h4); }
 }
+
+/* Figure-style captions. Convention: an italic-only paragraph
+   immediately following a paragraph that contains an image (wrapped by
+   starlight-image-zoom into <starlight-image-zoom-zoomable>) is treated
+   as a caption — rendered smaller and muted, with reduced top margin so
+   it visually attaches to the figure above. The selector is specific
+   enough that ordinary italic paragraphs elsewhere are unaffected. */
+.sl-markdown-content
+  p:has(> starlight-image-zoom-zoomable)
+  + p:has(> em:only-child) {
+  font-size: 0.875rem;
+  line-height: 1.55;
+  color: var(--sl-color-gray-3);
+  margin-top: 0.5rem;
+}

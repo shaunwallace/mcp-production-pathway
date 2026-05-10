@@ -39,7 +39,14 @@ export default defineConfig({
 					],
 					footerText: "Template — fork and make it your own. MIT licensed.",
 				}),
-				starlightImageZoom(),
+				starlightImageZoom({
+					// Suppress the plugin's "alt text as caption" rendering on
+					// zoom. The brief renders its own visible captions in
+					// markdown beneath each figure (smaller-font italic),
+					// which is the canonical caption. Showing alt text again
+					// on zoom would duplicate or confuse.
+					showCaptions: false,
+				}),
 			],
 			sidebar: [
 			  {
